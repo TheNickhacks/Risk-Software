@@ -20,6 +20,10 @@ class User(UserMixin, db.Model):
     last_project_creation = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
     
+    # Password Recovery
+    reset_token = db.Column(db.String(255), unique=True, nullable=True, index=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
+    
     # Relaciones
     projects = db.relationship("Project", back_populates="user", cascade="all, delete-orphan")
     audit_logs = db.relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
@@ -39,6 +43,29 @@ class User(UserMixin, db.Model):
             return True
         time_elapsed = datetime.utcnow() - self.last_project_creation
         return time_elapsed >= timedelta(hours=24)
+    
+    def generate_reset_token(self) -> str:
+        """Generar token de recuperación de contraseña (válido por 1 hora)"""
+        self.reset_token = str(uuid.uuid4())
+        self.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+        db.session.commit()
+        return self.reset_token
+    
+    def verify_reset_token(self, token: str) -> bool:
+        """Verificar si el token de recuperación es válido y no ha expirado"""
+        if self.reset_token != token:
+            return False
+        if self.reset_token_expiry is None:
+            return False
+        if datetime.utcnow() > self.reset_token_expiry:
+            return False
+        return True
+    
+    def clear_reset_token(self) -> None:
+        """Limpiar el token de recuperación después de ser usado"""
+        self.reset_token = None
+        self.reset_token_expiry = None
+        db.session.commit()
     
     def __repr__(self) -> str:
         return f"<User {self.email} ({self.rut})>"

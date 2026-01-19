@@ -119,6 +119,89 @@ def logout():
     return redirect(url_for("auth.index"))
 
 
+@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    """Solicitar recuperación de contraseña"""
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard.dashboard"))
+    
+    if request.method == "POST":
+        email = request.form.get("email")
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # Generar token de recuperación
+            reset_token = user.generate_reset_token()
+            
+            # Enviar correo
+            from app.services.email_service import email_service
+            success, message = email_service.send_password_reset_email(
+                recipient_email=user.email,
+                reset_token=reset_token,
+                user_name=user.email.split("@")[0]
+            )
+            
+            if success:
+                flash(
+                    "Se ha enviado un correo de recuperación a tu dirección de email. "
+                    "Por favor revisa tu bandeja de entrada.",
+                    "success"
+                )
+                logger.info(f"Password reset requested for: {email}")
+            else:
+                flash("Error al enviar el correo. Por favor intenta más tarde.", "error")
+                logger.error(f"Failed to send reset email to: {email}")
+        else:
+            # No revelar si el correo existe o no (seguridad)
+            flash(
+                "Si existe una cuenta con ese correo, recibirás instrucciones de recuperación.",
+                "success"
+            )
+        
+        return redirect(url_for("auth.login"))
+    
+    return render_template("auth/forgot_password.html")
+
+
+@auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    """Cambiar contraseña con token de recuperación"""
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard.dashboard"))
+    
+    # Buscar usuario con el token
+    user = User.query.filter_by(reset_token=token).first()
+    
+    if not user or not user.verify_reset_token(token):
+        flash("El enlace de recuperación es inválido o ha expirado.", "error")
+        return redirect(url_for("auth.login"))
+    
+    if request.method == "POST":
+        password = request.form.get("password")
+        password_confirm = request.form.get("password_confirm")
+        
+        # Validaciones
+        if not password or len(password) < 8:
+            flash("La contraseña debe tener al menos 8 caracteres.", "error")
+            return render_template("auth/reset_password.html", token=token)
+        
+        if password != password_confirm:
+            flash("Las contraseñas no coinciden.", "error")
+            return render_template("auth/reset_password.html", token=token)
+        
+        # Cambiar contraseña
+        user.set_password(password)
+        user.clear_reset_token()
+        db.session.commit()
+        
+        flash("Tu contraseña ha sido cambiada exitosamente. Inicia sesión con tu nueva contraseña.", "success")
+        logger.info(f"Password reset successful for: {user.email}")
+        
+        return redirect(url_for("auth.login"))
+    
+    return render_template("auth/reset_password.html", token=token)
+
+
 # ==================== DASHBOARD ====================
 
 @dashboard_bp.route("/")

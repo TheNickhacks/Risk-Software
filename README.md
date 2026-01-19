@@ -105,6 +105,15 @@ flask run
 - Validación de email único
 - Hash seguro de contraseñas con Bcrypt
 
+### ✅ Sistema de Recuperación de Contraseña
+- Solicitud de recuperación por email
+- Tokens seguros con expiración de 1 hora
+- Validación de identidad vía enlace único
+- Cambio de contraseña con confirmación
+- Interfaz responsive y segura
+
+**Documentación:** Ver [EMAIL_CONFIGURATION.md](EMAIL_CONFIGURATION.md) para configurar el servicio de email
+
 ### ✅ Rate Limiting
 - Máximo 2 proyectos por usuario cada 24 horas
 - Máximo 10 mensajes por sesión de chat
@@ -146,7 +155,14 @@ flask run
 - created_at
 - last_project_creation (para rate limiting)
 - is_active
+- reset_token (para recuperación de contraseña, nullable)
+- reset_token_expiry (expiración del token, 1 hora, nullable)
 ```
+
+**Métodos de recuperación de contraseña:**
+- `generate_reset_token()` - Genera UUID y expira en 1 hora
+- `verify_reset_token(token)` - Valida token y expiración
+- `clear_reset_token()` - Limpia token después de usar
 
 ### Project
 ```
