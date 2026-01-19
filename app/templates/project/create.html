@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block title %}Crear Proyecto - PreIncubadora AI{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-8">
+    <!-- Encabezado -->
+    <div>
+        <h1 class="text-3xl font-bold text-white">Crear Nuevo Proyecto</h1>
+        <p class="text-slate-400 mt-2">Presenta tu idea de negocio. Sé específico pero no te preocupes por los detalles.</p>
+    </div>
+    
+    <!-- Formulario -->
+    <form method="POST" class="space-y-6">
+        <!-- Título -->
+        <div>
+            <label for="title" class="block text-sm font-medium text-slate-300 mb-2">
+                Nombre del Proyecto
+            </label>
+            <input
+                type="text"
+                id="title"
+                name="title"
+                required
+                placeholder="ej: App de Delivery de Alimentos Saludables"
+                class="w-full input-field"
+            />
+            <p class="text-xs text-slate-500 mt-1">Breve nombre identificador</p>
+        </div>
+        
+        <!-- Idea Raw -->
+        <div>
+            <label for="raw_idea" class="block text-sm font-medium text-slate-300 mb-2">
+                Tu Idea (Descripción Libre)
+            </label>
+            <textarea
+                id="raw_idea"
+                name="raw_idea"
+                required
+                rows="8"
+                placeholder="Describe tu idea de negocio libremente. Incluye:
+- Problema que resuelves
+- Solución propuesta
+- Target market (quién pagaría)
+- Cómo ganarías dinero
+- Por qué tú puedes hacerlo
+
+No necesita ser perfecto - usaremos IA para estructurarlo."
+                class="w-full input-field font-mono text-sm"
+            ></textarea>
+            <p class="text-xs text-slate-500 mt-1">
+                Mínimo 50 caracteres. La IA evaluará ambigüedad y formulará preguntas de clarificación.
+            </p>
+        </div>
+        
+        <!-- Info sobre proceso -->
+        <div class="card p-4 bg-blue-900 bg-opacity-20 border-blue-700">
+            <h3 class="text-sm font-semibold text-blue-300 mb-2">¿Qué pasará después?</h3>
+            <ol class="text-xs text-slate-300 space-y-1">
+                <li><strong>1.</strong> La IA evaluará el grado de ambigüedad de tu idea</li>
+                <li><strong>2.</strong> Si es necesario, responderás 3 preguntas de clarificación</li>
+                <li><strong>3.</strong> Generaremos un reporte completo bajo 9 pilares de viabilidad</li>
+                <li><strong>4.</strong> Recibirás una puntuación y recomendación (viable/needs_pivot/not_viable)</li>
+            </ol>
+        </div>
+        
+        <!-- Límite de proyectos -->
+        <div class="card p-4 bg-slate-800 border-slate-600">
+            <p class="text-xs text-slate-400">
+                <strong class="text-white">Rate Limiting:</strong> Máximo 2 proyectos por usuario cada 24 horas.
+            </p>
+        </div>
+        
+        <!-- Botones -->
+        <div class="flex gap-4">
+            <button
+                type="submit"
+                class="flex-1 btn-primary text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition"
+            >
+                Crear Proyecto y Analizar
+            </button>
+            <a href="/dashboard" class="flex-1 border border-slate-600 text-white font-semibold py-3 px-6 rounded-lg text-center hover:bg-slate-800 transition">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

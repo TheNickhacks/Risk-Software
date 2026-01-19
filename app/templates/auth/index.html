@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}Bienvenido - PreIncubadora AI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl">
+        
+        <!-- Lado Izquierdo: Hero -->
+        <div class="flex flex-col justify-center space-y-8">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                    Transforma tu idea<br>en realidad
+                </h1>
+                <p class="text-xl text-slate-300">
+                    Análisis de viabilidad impulsado por IA. Resultados en minutos, no en meses.
+                </p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-bold">1</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Presenta tu idea</h3>
+                        <p class="text-slate-400">Describe tu concepto de negocio en formato libre</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-bold">2</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Responde preguntas</h3>
+                        <p class="text-slate-400">Aclaramos ambigüedades con preguntas estratégicas</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-bold">3</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">Recibe análisis</h3>
+                        <p class="text-slate-400">Reporte completo bajo 9 pilares de viabilidad</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-4">
+                <p class="text-sm text-slate-400">
+                    Enfoque: <span class="text-white font-semibold">Realismo Constructivo</span> —
+                    Análisis riguroso + Pivotes Estratégicos
+                </p>
+            </div>
+        </div>
+        
+        <!-- Lado Derecho: CTA -->
+        <div class="flex flex-col justify-center space-y-6">
+            <div class="card p-8">
+                <h2 class="text-2xl font-bold text-white mb-6">Comienza hoy</h2>
+                
+                <div class="space-y-4">
+                    <a href="/register" class="w-full btn-primary text-white font-semibold py-3 px-6 rounded-lg text-center hover:opacity-90 transition">
+                        Crear cuenta
+                    </a>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-slate-600"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-slate-800 text-slate-400">O</span>
+                        </div>
+                    </div>
+                    
+                    <a href="/login" class="w-full border border-slate-600 text-white font-semibold py-3 px-6 rounded-lg text-center hover:bg-slate-800 transition">
+                        Inicia sesión
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card p-6 bg-opacity-50">
+                <h3 class="text-white font-semibold mb-3">¿Por qué PreIncubadora AI?</h3>
+                <ul class="text-slate-300 text-sm space-y-2">
+                    <li>✓ Análisis basado en datos reales</li>
+                    <li>✓ 9 pilares de viabilidad estructurados</li>
+                    <li>✓ Recomendaciones de pivote si es necesario</li>
+                    <li>✓ Máximo 2 análisis por día (rate limiting)</li>
+                    <li>✓ Privacidad total de datos (GDPR/LPD)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

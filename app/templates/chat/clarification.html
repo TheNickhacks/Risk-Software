@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+
+{% block title %}Chat de Clarificación - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto h-screen flex flex-col">
+    <!-- Encabezado -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-white">Clarificación: {{ project.title }}</h1>
+        <p class="text-slate-400">Responde las preguntas para refinar tu idea</p>
+    </div>
+    
+    <!-- Chat Container -->
+    <div class="flex-1 overflow-y-auto mb-6 space-y-4">
+        {% for message in messages %}
+        <div class="flex {% if message.role == 'user' %}justify-end{% else %}justify-start{% endif %}">
+            <div class="max-w-xs md:max-w-md lg:max-w-lg card p-4
+                {% if message.role == 'user' %}
+                    bg-blue-900 border-blue-600
+                {% else %}
+                    bg-slate-800 border-slate-600
+                {% endif %}">
+                <p class="text-sm {% if message.role == 'user' %}text-blue-100{% else %}text-slate-300{% endif %} whitespace-pre-wrap">
+                    {{ message.content }}
+                </p>
+                <p class="text-xs {% if message.role == 'user' %}text-blue-400{% else %}text-slate-500{% endif %} mt-2">
+                    {{ message.created_at.strftime('%H:%M') }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if session.is_locked %}
+        <div class="card p-4 bg-orange-900 bg-opacity-50 border-orange-600">
+            <p class="text-orange-300">
+                <strong>✓ Chat completado</strong> - Se alcanzó el límite de mensajes.
+                El análisis se está generando.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Input Form -->
+    {% if not session.is_locked %}
+    <div class="card p-4">
+        <form id="messageForm" class="space-y-4">
+            <textarea
+                id="messageInput"
+                placeholder="Escribe tu respuesta aquí..."
+                rows="4"
+                class="w-full input-field"
+                required
+            ></textarea>
+            
+            <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500">
+                    Mensajes: {{ session.message_count }}/{{ config.MAX_CHAT_MESSAGES }}
+                </span>
+                <button
+                    type="submit"
+                    class="btn-primary text-white font-semibold py-2 px-6 rounded-lg hover:opacity-90 transition"
+                >
+                    Enviar
+                </button>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="card p-4 bg-green-900 bg-opacity-20 border-green-600">
+        <p class="text-green-300">
+            <strong>Sesión completada.</strong>
+            <a href="/project/{{ project.id }}" class="underline hover:no-underline">
+                Ver resultados →
+            </a>
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('messageForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    // Enviar al backend
+    const response = await fetch('/chat/send-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: '{{ session.id }}',
+            message: message
+        })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+        // Reload page para actualizar chat
+        location.reload();
+    } else {
+        alert('Error: ' + (data.error || 'Unknown error'));
+    }
+    
+    messageInput.value = '';
+});
+</script>
+{% endblock %}
