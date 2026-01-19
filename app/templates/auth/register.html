@@ -4,92 +4,164 @@
 
 {% block content %}
 <div class="min-h-screen flex items-center justify-center py-12 px-4">
-    <div class="card p-8 max-w-md w-full">
-        <h1 class="text-3xl font-bold text-white mb-6 text-center">Crear Cuenta</h1>
+    <!-- Background Effects -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/3 left-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="relative w-full max-w-md">
+        <!-- Card -->
+        <div class="card p-8 backdrop-blur-xl border border-slate-700/50 shadow-2xl">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/25 mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-50 mb-2">Crea tu cuenta</h1>
+                <p class="text-slate-400 text-sm">Comienza a validar tus ideas de negocio</p>
+            </div>
+            
+            <form method="POST" class="space-y-5">
+                <!-- Email -->
+                <div class="space-y-2">
+                    <label for="email" class="block text-sm font-medium text-slate-300">
+                        Correo electronico
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            required
+                            placeholder="tu@email.com"
+                            class="w-full pl-11 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-slate-50 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                        />
+                    </div>
+                </div>
+                
+                <!-- RUT -->
+                <div class="space-y-2">
+                    <label for="rut" class="block text-sm font-medium text-slate-300">
+                        RUT
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            id="rut"
+                            name="rut"
+                            required
+                            placeholder="12345678-9"
+                            pattern="[0-9]{7,8}-[0-9Kk]"
+                            class="w-full pl-11 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-slate-50 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                        />
+                    </div>
+                    <p class="flex items-center gap-1.5 text-xs text-slate-500">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Una cuenta por RUT. Este campo no puede cambiarse.
+                    </p>
+                </div>
+                
+                <!-- Password -->
+                <div class="space-y-2">
+                    <label for="password" class="block text-sm font-medium text-slate-300">
+                        Contrasena
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                        </div>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            minlength="8"
+                            placeholder="Minimo 8 caracteres"
+                            class="w-full pl-11 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-slate-50 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                        />
+                    </div>
+                    <!-- Password Strength Indicator -->
+                    <div class="flex gap-1 pt-1">
+                        <div class="h-1 flex-1 rounded-full bg-slate-700"></div>
+                        <div class="h-1 flex-1 rounded-full bg-slate-700"></div>
+                        <div class="h-1 flex-1 rounded-full bg-slate-700"></div>
+                        <div class="h-1 flex-1 rounded-full bg-slate-700"></div>
+                    </div>
+                    <p class="text-xs text-slate-500">
+                        Debe tener al menos 8 caracteres
+                    </p>
+                </div>
+                
+                <!-- Terms -->
+                <div class="p-4 bg-slate-900/30 border border-slate-700/50 rounded-xl">
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <div class="relative mt-0.5">
+                            <input
+                                type="checkbox"
+                                id="terms"
+                                name="terms"
+                                required
+                                class="peer sr-only"
+                            />
+                            <div class="w-5 h-5 border-2 border-slate-600 rounded-md bg-slate-900/50 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all duration-200"></div>
+                            <svg class="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs text-slate-400 leading-relaxed">
+                            Acepto los <a href="#" class="text-blue-400 hover:text-blue-300">terminos de servicio</a> y la <a href="#" class="text-blue-400 hover:text-blue-300">politica de privacidad</a>.
+                            Reconozco que mis datos se procesaran bajo GDPR/LPD.
+                        </span>
+                    </label>
+                </div>
+                
+                <!-- Submit -->
+                <button
+                    type="submit"
+                    class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 transform hover:-translate-y-0.5"
+                >
+                    <span class="flex items-center justify-center gap-2">
+                        Crear cuenta
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+            
+            <!-- Link to Login -->
+            <p class="text-center text-slate-400 text-sm mt-8">
+                Ya tienes cuenta?
+                <a href="/login" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                    Inicia sesion aqui
+                </a>
+            </p>
+        </div>
         
-        <form method="POST" class="space-y-4">
-            <!-- Email -->
-            <div>
-                <label for="email" class="block text-sm font-medium text-slate-300 mb-2">
-                    Email
-                </label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    placeholder="tu@email.com"
-                    class="w-full input-field"
-                />
-            </div>
-            
-            <!-- RUT -->
-            <div>
-                <label for="rut" class="block text-sm font-medium text-slate-300 mb-2">
-                    RUT (ej: 12345678-9)
-                </label>
-                <input
-                    type="text"
-                    id="rut"
-                    name="rut"
-                    required
-                    placeholder="12345678-9"
-                    pattern="[0-9]{7,8}-[0-9Kk]"
-                    class="w-full input-field"
-                />
-                <p class="text-xs text-slate-500 mt-1">
-                    Una cuenta por RUT. Este campo no puede cambiarse.
-                </p>
-            </div>
-            
-            <!-- Password -->
-            <div>
-                <label for="password" class="block text-sm font-medium text-slate-300 mb-2">
-                    Contraseña
-                </label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    required
-                    minlength="8"
-                    placeholder="Mínimo 8 caracteres"
-                    class="w-full input-field"
-                />
-                <p class="text-xs text-slate-500 mt-1">
-                    Debe tener al menos 8 caracteres.
-                </p>
-            </div>
-            
-            <!-- Términos -->
-            <div class="flex items-start space-x-3">
-                <input
-                    type="checkbox"
-                    id="terms"
-                    name="terms"
-                    required
-                    class="mt-1"
-                />
-                <label for="terms" class="text-xs text-slate-400">
-                    Acepto los términos de servicio y la política de privacidad.
-                    Reconozco que mis datos se procesarán bajo GDPR/LPD.
-                </label>
-            </div>
-            
-            <!-- Submit -->
-            <button
-                type="submit"
-                class="w-full btn-primary text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition"
-            >
-                Crear cuenta
-            </button>
-        </form>
-        
-        <!-- Link a Login -->
-        <p class="text-center text-slate-400 text-sm mt-6">
-            ¿Ya tienes cuenta?
-            <a href="/login" class="text-blue-400 hover:text-blue-300">Inicia sesión aquí</a>
-        </p>
+        <!-- Security Badge -->
+        <div class="flex items-center justify-center gap-2 mt-6 text-slate-500 text-xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span>Tus datos estan protegidos con encriptacion de nivel bancario</span>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -12,75 +12,285 @@
             theme: {
                 extend: {
                     colors: {
-                        'slate': {
-                            '900': '#0f172a'
-                        },
                         'electric': {
-                            'blue': '#2563EB'
+                            'blue': '#2563EB',
+                            'blue-hover': '#1D4ED8'
+                        },
+                        'viability': {
+                            'high': '#10B981',
+                            'partial': '#F59E0B',
+                            'critical': '#EF4444'
                         }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(37, 99, 235, 0.3)',
+                        'glow-sm': '0 0 10px rgba(37, 99, 235, 0.2)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
                     }
                 }
             }
         }
     </script>
     
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* Electric Future Design System */
         :root {
-            --primary: #2563EB;
-            --primary-dark: #1d4ed8;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
+            --electric-blue: #2563EB;
+            --electric-blue-hover: #1D4ED8;
+            --bg-primary: #0F172A;
+            --bg-card: #1E293B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --viability-high: #10B981;
+            --viability-partial: #F59E0B;
+            --viability-critical: #EF4444;
+            --border-subtle: #334155;
+        }
+        
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--electric-blue) var(--bg-card);
+        }
+        
+        *::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        *::-webkit-scrollbar-track {
+            background: var(--bg-card);
+        }
+        
+        *::-webkit-scrollbar-thumb {
+            background: var(--electric-blue);
+            border-radius: 3px;
         }
         
         body {
-            background-color: var(--bg-dark);
-            color: #e2e8f0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
+        /* Gradient Background Pattern */
+        .bg-grid-pattern {
+            background-image: 
+                linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* Primary Button */
         .btn-primary {
-            background-color: var(--primary);
-            transition: background-color 0.3s;
+            background: linear-gradient(135deg, var(--electric-blue) 0%, var(--electric-blue-hover) 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
         }
         
         .btn-primary:hover {
-            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
         }
         
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        /* Secondary Button */
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--electric-blue);
+            background: rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Card Styles */
         .card {
-            background-color: var(--bg-card);
-            border-radius: 0.5rem;
-            border: 1px solid #334155;
+            background: linear-gradient(145deg, var(--bg-card) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border-radius: 1rem;
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
+        .card:hover {
+            border-color: rgba(37, 99, 235, 0.5);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(37, 99, 235, 0.1);
+        }
+        
+        .card-static {
+            background: linear-gradient(145deg, var(--bg-card) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border-radius: 1rem;
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Input Fields */
         .input-field {
-            background-color: #1e293b;
-            border: 1px solid #475569;
-            border-radius: 0.375rem;
-            color: #e2e8f0;
-            padding: 0.5rem 0.75rem;
+            background-color: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-subtle);
+            border-radius: 0.75rem;
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .input-field:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: var(--electric-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.1);
+        }
+        
+        .input-field::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        /* Status Badges */
+        .badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+        
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FBBF24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .badge-info {
+            background: rgba(37, 99, 235, 0.15);
+            color: #60A5FA;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+        
+        .badge-purple {
+            background: rgba(139, 92, 246, 0.15);
+            color: #A78BFA;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            height: 0.5rem;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Glow Effects */
+        .glow-blue {
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        }
+        
+        .glow-green {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .glow-yellow {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+        
+        .glow-red {
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        /* Link Styles */
+        .link-electric {
+            color: var(--electric-blue);
+            transition: all 0.2s;
+        }
+        
+        .link-electric:hover {
+            color: #60A5FA;
+            text-decoration: underline;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .animate-shimmer {
+            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Navbar Glass Effect */
+        .navbar-glass {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        /* Footer */
+        .footer-gradient {
+            background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 100%);
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-slate-900">
+<body class="bg-grid-pattern min-h-screen flex flex-col">
     
     <!-- Navbar -->
-    <nav class="bg-slate-900 border-b border-slate-700 sticky top-0 z-50">
+    <nav class="navbar-glass border-b border-slate-700/50 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg"></div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
                     <a href="{% if current_user.is_authenticated %}/dashboard{% else %}/{% endif %}" 
-                       class="text-xl font-bold text-white hover:text-blue-400 transition">
+                       class="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent hover:from-blue-400 hover:to-blue-200 transition-all duration-300">
                         PreIncubadora AI
                     </a>
                 </div>
@@ -88,17 +298,23 @@
                 <!-- Nav Links -->
                 <div class="flex items-center space-x-4">
                     {% if current_user.is_authenticated %}
-                        <span class="text-sm text-slate-400">
-                            {{ current_user.email }}
-                        </span>
-                        <a href="/logout" class="text-sm text-slate-300 hover:text-white transition">
-                            Cerrar sesión
+                        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                            <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-slate-300">
+                                {{ current_user.email }}
+                            </span>
+                        </div>
+                        <a href="/logout" class="text-sm text-slate-400 hover:text-white transition-colors duration-200 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            <span>Salir</span>
                         </a>
                     {% else %}
-                        <a href="/login" class="text-sm text-slate-300 hover:text-white transition">
+                        <a href="/login" class="text-sm text-slate-300 hover:text-white transition-colors duration-200">
                             Iniciar sesión
                         </a>
-                        <a href="/register" class="text-sm btn-primary text-white px-4 py-2 rounded">
+                        <a href="/register" class="btn-primary text-white text-sm font-medium px-5 py-2 rounded-lg">
                             Registrarse
                         </a>
                     {% endif %}
@@ -108,16 +324,41 @@
     </nav>
     
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="mb-4 p-4 rounded card border-l-4 {% if category == 'error' %}border-red-500{% elif category == 'success' %}border-green-500{% else %}border-blue-500{% endif %}">
-                        <p class="{% if category == 'error' %}text-red-300{% elif category == 'success' %}text-green-300{% else %}text-blue-300{% endif %}">
-                            {{ message }}
-                        </p>
+                    <div class="mb-6 p-4 rounded-xl border-l-4 backdrop-blur-sm
+                        {% if category == 'error' %}
+                            bg-red-900/20 border-red-500 
+                        {% elif category == 'success' %}
+                            bg-emerald-900/20 border-emerald-500
+                        {% else %}
+                            bg-blue-900/20 border-blue-500
+                        {% endif %}">
+                        <div class="flex items-center space-x-3">
+                            {% if category == 'error' %}
+                                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            {% elif category == 'success' %}
+                                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            {% endif %}
+                            <p class="font-medium
+                                {% if category == 'error' %}text-red-300
+                                {% elif category == 'success' %}text-emerald-300
+                                {% else %}text-blue-300{% endif %}">
+                                {{ message }}
+                            </p>
+                        </div>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -128,29 +369,43 @@
     </main>
     
     <!-- Footer -->
-    <footer class="bg-slate-900 border-t border-slate-700 mt-16 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-white font-semibold mb-2">PreIncubadora AI</h3>
-                    <p class="text-slate-400 text-sm">Transforma tus ideas en reportes de viabilidad con IA.</p>
+    <footer class="border-t border-slate-800 mt-auto">
+        <div class="footer-gradient">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-white font-semibold">PreIncubadora AI</h3>
+                        </div>
+                        <p class="text-slate-400 text-sm leading-relaxed">Transforma tus ideas en reportes de viabilidad profesionales con el poder de la inteligencia artificial.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-semibold mb-4">Legal</h3>
+                        <ul class="text-slate-400 text-sm space-y-3">
+                            <li><a href="#" class="hover:text-blue-400 transition-colors duration-200">Términos de Servicio</a></li>
+                            <li><a href="#" class="hover:text-blue-400 transition-colors duration-200">Política de Privacidad</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-semibold mb-4">Contacto</h3>
+                        <a href="mailto:hola@preincubadora.ai" class="text-slate-400 text-sm hover:text-blue-400 transition-colors duration-200 flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>hola@preincubadora.ai</span>
+                        </a>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-white font-semibold mb-2">Legal</h3>
-                    <ul class="text-slate-400 text-sm space-y-1">
-                        <li><a href="#" class="hover:text-white transition">Términos de Servicio</a></li>
-                        <li><a href="#" class="hover:text-white transition">Privacidad</a></li>
-                    </ul>
+                <div class="border-t border-slate-800 mt-10 pt-8">
+                    <p class="text-slate-500 text-sm text-center">
+                        © 2026 PreIncubadora AI. Todos los derechos reservados.
+                    </p>
                 </div>
-                <div>
-                    <h3 class="text-white font-semibold mb-2">Contacto</h3>
-                    <p class="text-slate-400 text-sm">hola@preincubadora.ai</p>
-                </div>
-            </div>
-            <div class="border-t border-slate-700 mt-8 pt-8">
-                <p class="text-slate-500 text-sm text-center">
-                    © 2026 PreIncubadora AI. Todos los derechos reservados.
-                </p>
             </div>
         </div>
     </footer>

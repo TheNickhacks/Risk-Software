@@ -3,13 +3,41 @@
 {% block title %}Página no encontrada - PreIncubadora AI{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center">
-    <div class="text-center">
-        <h1 class="text-6xl font-bold text-white mb-4">404</h1>
-        <p class="text-xl text-slate-400 mb-8">Página no encontrada</p>
-        <a href="/dashboard" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg hover:opacity-90 transition inline-block">
-            Volver al Dashboard
-        </a>
+<div class="min-h-[60vh] flex items-center justify-center">
+    <div class="text-center max-w-md mx-auto">
+        <!-- Animated 404 -->
+        <div class="relative mb-8">
+            <div class="text-[150px] font-bold text-transparent bg-clip-text bg-gradient-to-b from-slate-700 to-slate-800 leading-none select-none">
+                404
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-24 h-24 bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-blue-500/20">
+                    <svg class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <h1 class="text-2xl font-bold text-white mb-3">Página no encontrada</h1>
+        <p class="text-slate-400 mb-8 leading-relaxed">
+            Lo sentimos, la página que buscas no existe o ha sido movida a otra ubicación.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/dashboard" class="btn-primary text-white font-semibold py-3 px-6 rounded-xl inline-flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span>Ir al Dashboard</span>
+            </a>
+            <a href="javascript:history.back()" class="btn-secondary text-white font-semibold py-3 px-6 rounded-xl inline-flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+                </svg>
+                <span>Volver atrás</span>
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

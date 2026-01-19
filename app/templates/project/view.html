@@ -4,102 +4,185 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
-    <!-- Encabezado -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-white">{{ project.title }}</h1>
-            <p class="text-slate-400 mt-2">
-                Estado:
-                <span class="font-semibold
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div class="space-y-3">
+            <div class="flex items-center space-x-3">
+                <a href="/dashboard" class="text-slate-400 hover:text-white transition-colors duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">{{ project.title }}</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="text-slate-400">Estado:</span>
+                <span class="badge
                     {% if project.status == 'ambiguous' %}
-                        text-yellow-400
+                        badge-warning
                     {% elif project.status == 'ready' %}
-                        text-green-400
+                        badge-success
                     {% elif project.status == 'in_analysis' %}
-                        text-blue-400
+                        badge-info
                     {% else %}
-                        text-purple-400
+                        badge-purple
                     {% endif %}">
                     {{ project.status }}
                 </span>
-            </p>
+            </div>
         </div>
-        <div class="mt-4 md:mt-0 flex gap-2">
-            <a href="/dashboard" class="border border-slate-600 text-white px-4 py-2 rounded hover:bg-slate-800 transition">
-                ← Volver
-            </a>
-        </div>
+        <a href="/dashboard" class="btn-secondary text-white px-5 py-2.5 rounded-xl inline-flex items-center space-x-2 text-sm font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span>Dashboard</span>
+        </a>
     </div>
     
-    <!-- Idea Original -->
-    <div class="card p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Idea Original</h2>
-        <p class="text-slate-300 whitespace-pre-wrap">{{ project.raw_idea }}</p>
+    <!-- Original Idea Card -->
+    <div class="card-static p-6">
+        <div class="flex items-center space-x-3 mb-4">
+            <div class="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-white">Idea Original</h2>
+        </div>
+        <p class="text-slate-300 whitespace-pre-wrap leading-relaxed">{{ project.raw_idea }}</p>
     </div>
     
-    <!-- Variability Score -->
-    <div class="card p-6">
-        <h2 class="text-xl font-semibold text-white mb-4">Análisis de Ambigüedad</h2>
-        <div class="space-y-4">
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-slate-300">Puntuación de Variabilidad (0-100)</span>
-                    <span class="text-2xl font-bold
+    <!-- Variability Score Card -->
+    <div class="card-static p-6">
+        <div class="flex items-center space-x-3 mb-6">
+            <div class="w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-white">Análisis de Ambigüedad</h2>
+        </div>
+        
+        <div class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <span class="text-slate-300">Puntuación de Variabilidad</span>
+                <div class="flex items-center space-x-3">
+                    <span class="text-4xl font-bold
                         {% if project.variability_score < 33 %}
-                            text-green-400
+                            text-emerald-400
                         {% elif project.variability_score < 67 %}
-                            text-yellow-400
+                            text-amber-400
                         {% else %}
                             text-red-400
                         {% endif %}">
                         {{ "%.1f"|format(project.variability_score) }}%
                     </span>
                 </div>
-                <div class="h-4 bg-slate-700 rounded-full overflow-hidden">
-                    <div class="h-full rounded-full transition-all"
-                        style="width: {{ project.variability_score }}%;
-                        {% if project.variability_score < 33 %}
-                            background-color: #10b981;
-                        {% elif project.variability_score < 67 %}
-                            background-color: #f59e0b;
-                        {% else %}
-                            background-color: #ef4444;
-                        {% endif %}">
-                    </div>
+            </div>
+            
+            <div class="h-3 bg-slate-700/50 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500"
+                    style="width: {{ project.variability_score }}%;
+                    {% if project.variability_score < 33 %}
+                        background: linear-gradient(90deg, #10B981, #34D399);
+                        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+                    {% elif project.variability_score < 67 %}
+                        background: linear-gradient(90deg, #F59E0B, #FBBF24);
+                        box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+                    {% else %}
+                        background: linear-gradient(90deg, #EF4444, #F87171);
+                        box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+                    {% endif %}">
                 </div>
             </div>
             
-            <div class="text-sm text-slate-400">
+            <div class="p-4 rounded-xl
                 {% if project.variability_score < 33 %}
-                    <strong class="text-green-400">✓ Baja ambigüedad:</strong> Idea clara y bien definida
+                    bg-emerald-900/20 border border-emerald-600/30
                 {% elif project.variability_score < 67 %}
-                    <strong class="text-yellow-400">⚠ Ambigüedad media:</strong> Requiere clarificaciones
+                    bg-amber-900/20 border border-amber-600/30
                 {% else %}
-                    <strong class="text-red-400">✗ Alta ambigüedad:</strong> Múltiples aspectos vagos
+                    bg-red-900/20 border border-red-600/30
+                {% endif %}">
+                {% if project.variability_score < 33 %}
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-6 h-6 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <strong class="text-emerald-400">Baja ambigüedad</strong>
+                            <p class="text-sm text-slate-400 mt-1">Idea clara y bien definida, lista para análisis profundo.</p>
+                        </div>
+                    </div>
+                {% elif project.variability_score < 67 %}
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-6 h-6 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <div>
+                            <strong class="text-amber-400">Ambigüedad media</strong>
+                            <p class="text-sm text-slate-400 mt-1">La idea requiere algunas clarificaciones antes del análisis completo.</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <strong class="text-red-400">Alta ambigüedad</strong>
+                            <p class="text-sm text-slate-400 mt-1">Múltiples aspectos vagos detectados, se necesitan más detalles.</p>
+                        </div>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <!-- Plan de Negocio (si existe) -->
+    <!-- Business Plan Section -->
     {% if project.business_plan %}
     <div class="space-y-6">
-        <!-- Evaluación General -->
-        <div class="card p-6 border-2
+        <!-- Viability Evaluation Card -->
+        <div class="card-static p-6 border-2
             {% if project.business_plan.recommendation == 'viable' %}
-                border-green-600
+                border-emerald-500/50 glow-green
             {% elif project.business_plan.recommendation == 'needs_pivot' %}
-                border-yellow-600
+                border-amber-500/50 glow-yellow
             {% else %}
-                border-red-600
+                border-red-500/50 glow-red
             {% endif %}">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold text-white">Evaluación de Viabilidad</h2>
-                <span class="text-3xl font-bold
+            
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center
+                        {% if project.business_plan.recommendation == 'viable' %}
+                            bg-emerald-600/20
+                        {% elif project.business_plan.recommendation == 'needs_pivot' %}
+                            bg-amber-600/20
+                        {% else %}
+                            bg-red-600/20
+                        {% endif %}">
+                        {% if project.business_plan.recommendation == 'viable' %}
+                            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                            </svg>
+                        {% elif project.business_plan.recommendation == 'needs_pivot' %}
+                            <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        {% else %}
+                            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <h2 class="text-xl font-semibold text-white">Evaluación de Viabilidad</h2>
+                </div>
+                <span class="text-5xl font-bold
                     {% if project.business_plan.recommendation == 'viable' %}
-                        text-green-400
+                        text-emerald-400
                     {% elif project.business_plan.recommendation == 'needs_pivot' %}
-                        text-yellow-400
+                        text-amber-400
                     {% else %}
                         text-red-400
                     {% endif %}">
@@ -108,47 +191,63 @@
             </div>
             
             <div class="mb-6">
-                <span class="inline-block px-4 py-2 rounded-full font-semibold text-sm
+                <span class="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl font-semibold text-sm
                     {% if project.business_plan.recommendation == 'viable' %}
-                        bg-green-900 text-green-200
+                        bg-emerald-900/50 text-emerald-200 border border-emerald-600/50
                     {% elif project.business_plan.recommendation == 'needs_pivot' %}
-                        bg-yellow-900 text-yellow-200
+                        bg-amber-900/50 text-amber-200 border border-amber-600/50
                     {% else %}
-                        bg-red-900 text-red-200
+                        bg-red-900/50 text-red-200 border border-red-600/50
                     {% endif %}">
                     {% if project.business_plan.recommendation == 'viable' %}
-                        VIABLE - Adelante
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>VIABLE - Adelante con el proyecto</span>
                     {% elif project.business_plan.recommendation == 'needs_pivot' %}
-                        REQUIERE PIVOTE - Ver alternativas
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>REQUIERE PIVOTE - Ver alternativas</span>
                     {% else %}
-                        NO VIABLE - Explorar nuevas direcciones
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <span>NO VIABLE - Explorar nuevas direcciones</span>
                     {% endif %}
                 </span>
             </div>
             
-            <p class="text-slate-300 whitespace-pre-wrap">
+            <p class="text-slate-300 whitespace-pre-wrap leading-relaxed">
                 {{ project.business_plan.overall_assessment }}
             </p>
         </div>
         
-        <!-- Los 9 Pilares -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 9 Pillars Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             {% set pillars = [
-                ('problem_statement', 'Problema Real'),
-                ('value_proposition', 'Propuesta de Valor'),
-                ('target_market', 'Mercado'),
-                ('revenue_model', 'Modelo de Ingresos'),
-                ('cost_analysis', 'Costos'),
-                ('technical_feasibility', 'Viabilidad Técnica'),
-                ('risks_analysis', 'Riesgos'),
-                ('scalability_potential', 'Escalabilidad'),
-                ('validation_strategy', 'Validación')
+                ('problem_statement', 'Problema Real', 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'),
+                ('value_proposition', 'Propuesta de Valor', 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z'),
+                ('target_market', 'Mercado', 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'),
+                ('revenue_model', 'Modelo de Ingresos', 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'),
+                ('cost_analysis', 'Costos', 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z'),
+                ('technical_feasibility', 'Viabilidad Técnica', 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'),
+                ('risks_analysis', 'Riesgos', 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'),
+                ('scalability_potential', 'Escalabilidad', 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'),
+                ('validation_strategy', 'Validación', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4')
             ] %}
             
-            {% for pillar_attr, pillar_name in pillars %}
-            <div class="card p-4">
-                <h3 class="text-lg font-semibold text-white mb-3">{{ pillar_name }}</h3>
-                <p class="text-slate-300 text-sm whitespace-pre-wrap">
+            {% for pillar_attr, pillar_name, icon_path in pillars %}
+            <div class="card-static p-5 group hover:border-blue-500/50 transition-all duration-300">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-9 h-9 bg-blue-600/20 rounded-lg flex items-center justify-center group-hover:bg-blue-600/30 transition-colors duration-300">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ icon_path }}"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold text-white">{{ pillar_name }}</h3>
+                </div>
+                <p class="text-slate-400 text-sm whitespace-pre-wrap leading-relaxed">
                     {{ project.business_plan[pillar_attr] }}
                 </p>
             </div>
@@ -156,29 +255,40 @@
         </div>
     </div>
     {% else %}
-    <!-- CTA para generar análisis -->
-    <div class="card p-8 text-center">
-        <svg class="w-12 h-12 text-slate-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <h3 class="text-lg font-semibold text-white mb-2">Plan de negocio por generar</h3>
-        <p class="text-slate-400 mb-6">Completa el proceso de clarificación para obtener el análisis de viabilidad</p>
+    <!-- CTA to Generate Analysis -->
+    <div class="card-static p-10 text-center">
+        <div class="w-20 h-20 bg-gradient-to-br from-blue-600/20 to-blue-700/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-3">Plan de negocio por generar</h3>
+        <p class="text-slate-400 mb-8 max-w-md mx-auto">Completa el proceso de clarificación para obtener el análisis de viabilidad bajo los 9 pilares</p>
         
         {% if project.status == 'ambiguous' %}
-        <a href="/chat/clarification/{{ project.id }}" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg hover:opacity-90 transition inline-block">
-            Continuar con Chat de Clarificación
+        <a href="/chat/clarification/{{ project.id }}" class="btn-primary text-white font-semibold py-3 px-8 rounded-xl inline-flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <span>Continuar con Chat de Clarificación</span>
         </a>
         {% else %}
-        <a href="/chat/analysis/{{ project.id }}" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg hover:opacity-90 transition inline-block">
-            Generar Análisis
+        <a href="/chat/analysis/{{ project.id }}" class="btn-primary text-white font-semibold py-3 px-8 rounded-xl inline-flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <span>Generar Análisis</span>
         </a>
         {% endif %}
     </div>
     {% endif %}
     
-    <!-- Fecha -->
-    <div class="text-xs text-slate-500 text-center">
-        Proyecto creado: {{ project.created_at.strftime('%d de %B de %Y a las %H:%M') }}
+    <!-- Timestamp -->
+    <div class="flex items-center justify-center space-x-2 text-sm text-slate-500">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Proyecto creado: {{ project.created_at.strftime('%d de %B de %Y a las %H:%M') }}</span>
     </div>
 </div>
 {% endblock %}

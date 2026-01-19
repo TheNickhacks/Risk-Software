@@ -4,17 +4,24 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto space-y-8">
-    <!-- Encabezado -->
-    <div>
-        <h1 class="text-3xl font-bold text-white">Crear Nuevo Proyecto</h1>
-        <p class="text-slate-400 mt-2">Presenta tu idea de negocio. Sé específico pero no te preocupes por los detalles.</p>
+    <!-- Header -->
+    <div class="space-y-3">
+        <div class="flex items-center space-x-3">
+            <a href="/dashboard" class="text-slate-400 hover:text-white transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Crear Nuevo Proyecto</h1>
+        </div>
+        <p class="text-slate-400 text-lg">Presenta tu idea de negocio. Sé específico pero no te preocupes por los detalles.</p>
     </div>
     
-    <!-- Formulario -->
+    <!-- Form -->
     <form method="POST" class="space-y-6">
-        <!-- Título -->
-        <div>
-            <label for="title" class="block text-sm font-medium text-slate-300 mb-2">
+        <!-- Project Title -->
+        <div class="space-y-2">
+            <label for="title" class="block text-sm font-semibold text-slate-200">
                 Nombre del Proyecto
             </label>
             <input
@@ -23,21 +30,21 @@
                 name="title"
                 required
                 placeholder="ej: App de Delivery de Alimentos Saludables"
-                class="w-full input-field"
+                class="w-full input-field text-base"
             />
-            <p class="text-xs text-slate-500 mt-1">Breve nombre identificador</p>
+            <p class="text-xs text-slate-500">Breve nombre identificador para tu proyecto</p>
         </div>
         
-        <!-- Idea Raw -->
-        <div>
-            <label for="raw_idea" class="block text-sm font-medium text-slate-300 mb-2">
+        <!-- Raw Idea -->
+        <div class="space-y-2">
+            <label for="raw_idea" class="block text-sm font-semibold text-slate-200">
                 Tu Idea (Descripción Libre)
             </label>
             <textarea
                 id="raw_idea"
                 name="raw_idea"
                 required
-                rows="8"
+                rows="10"
                 placeholder="Describe tu idea de negocio libremente. Incluye:
 - Problema que resuelves
 - Solución propuesta
@@ -46,41 +53,73 @@
 - Por qué tú puedes hacerlo
 
 No necesita ser perfecto - usaremos IA para estructurarlo."
-                class="w-full input-field font-mono text-sm"
+                class="w-full input-field font-mono text-sm leading-relaxed"
             ></textarea>
-            <p class="text-xs text-slate-500 mt-1">
+            <p class="text-xs text-slate-500">
                 Mínimo 50 caracteres. La IA evaluará ambigüedad y formulará preguntas de clarificación.
             </p>
         </div>
         
-        <!-- Info sobre proceso -->
-        <div class="card p-4 bg-blue-900 bg-opacity-20 border-blue-700">
-            <h3 class="text-sm font-semibold text-blue-300 mb-2">¿Qué pasará después?</h3>
-            <ol class="text-xs text-slate-300 space-y-1">
-                <li><strong>1.</strong> La IA evaluará el grado de ambigüedad de tu idea</li>
-                <li><strong>2.</strong> Si es necesario, responderás 3 preguntas de clarificación</li>
-                <li><strong>3.</strong> Generaremos un reporte completo bajo 9 pilares de viabilidad</li>
-                <li><strong>4.</strong> Recibirás una puntuación y recomendación (viable/needs_pivot/not_viable)</li>
-            </ol>
+        <!-- Process Info Card -->
+        <div class="card-static p-5 bg-blue-900/20 border-blue-600/30">
+            <div class="flex items-start space-x-4">
+                <div class="w-10 h-10 bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-blue-300 mb-3">¿Qué pasará después?</h3>
+                    <ol class="text-sm text-slate-300 space-y-2">
+                        <li class="flex items-start space-x-3">
+                            <span class="flex items-center justify-center w-5 h-5 bg-blue-600/30 rounded-full text-xs font-bold text-blue-300 flex-shrink-0">1</span>
+                            <span>La IA evaluará el grado de ambigüedad de tu idea</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="flex items-center justify-center w-5 h-5 bg-blue-600/30 rounded-full text-xs font-bold text-blue-300 flex-shrink-0">2</span>
+                            <span>Si es necesario, responderás preguntas de clarificación</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="flex items-center justify-center w-5 h-5 bg-blue-600/30 rounded-full text-xs font-bold text-blue-300 flex-shrink-0">3</span>
+                            <span>Generaremos un reporte completo bajo 9 pilares de viabilidad</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <span class="flex items-center justify-center w-5 h-5 bg-blue-600/30 rounded-full text-xs font-bold text-blue-300 flex-shrink-0">4</span>
+                            <span>Recibirás una puntuación y recomendación final</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
         </div>
         
-        <!-- Límite de proyectos -->
-        <div class="card p-4 bg-slate-800 border-slate-600">
-            <p class="text-xs text-slate-400">
-                <strong class="text-white">Rate Limiting:</strong> Máximo 2 proyectos por usuario cada 24 horas.
-            </p>
+        <!-- Rate Limit Info -->
+        <div class="card-static p-4 bg-slate-800/50 border-slate-600/50">
+            <div class="flex items-center space-x-3">
+                <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-sm text-slate-400">
+                    <span class="font-semibold text-slate-300">Rate Limiting:</span> Máximo 2 proyectos por usuario cada 24 horas.
+                </p>
+            </div>
         </div>
         
-        <!-- Botones -->
-        <div class="flex gap-4">
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 pt-4">
             <button
                 type="submit"
-                class="flex-1 btn-primary text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition"
+                class="flex-1 btn-primary text-white font-semibold py-3.5 px-6 rounded-xl inline-flex items-center justify-center space-x-2"
             >
-                Crear Proyecto y Analizar
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <span>Crear Proyecto y Analizar</span>
             </button>
-            <a href="/dashboard" class="flex-1 border border-slate-600 text-white font-semibold py-3 px-6 rounded-lg text-center hover:bg-slate-800 transition">
-                Cancelar
+            <a href="/dashboard" class="flex-1 btn-secondary text-white font-semibold py-3.5 px-6 rounded-xl text-center inline-flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>Cancelar</span>
             </a>
         </div>
     </form>

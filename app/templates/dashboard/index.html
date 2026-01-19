@@ -4,95 +4,123 @@
 
 {% block content %}
 <div class="space-y-8">
-    <!-- Encabezado -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-white">Dashboard</h1>
-            <p class="text-slate-400 mt-2">Gestiona tus proyectos y análisis de viabilidad</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-white tracking-tight">Dashboard</h1>
+            <p class="text-slate-400 mt-2 text-lg">Gestiona tus proyectos y análisis de viabilidad</p>
         </div>
         
         {% if can_create_project %}
-        <a href="/project/create" class="mt-4 md:mt-0 btn-primary text-white font-semibold py-2 px-6 rounded-lg hover:opacity-90 transition inline-block">
-            + Nuevo Proyecto
+        <a href="/project/create" class="btn-primary text-white font-semibold py-3 px-6 rounded-xl inline-flex items-center space-x-2 group">
+            <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            <span>Nuevo Proyecto</span>
         </a>
         {% else %}
-        <div class="mt-4 md:mt-0 bg-orange-900 bg-opacity-50 border border-orange-600 text-orange-300 px-4 py-2 rounded-lg text-sm">
-            Límite diario alcanzado (máx. 2 proyectos/24h)
+        <div class="flex items-center space-x-3 bg-amber-900/30 border border-amber-600/50 text-amber-300 px-5 py-3 rounded-xl">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <span class="text-sm font-medium">Límite diario alcanzado (máx. 2 proyectos/24h)</span>
         </div>
         {% endif %}
     </div>
     
-    <!-- Proyectos -->
+    <!-- Projects Grid -->
     {% if projects %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for project in projects %}
-        <div class="card p-6 hover:border-blue-500 transition cursor-pointer group">
-            <a href="/project/{{ project.id }}" class="block h-full">
-                <!-- Estado Badge -->
-                <div class="flex items-start justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-white group-hover:text-blue-400 transition flex-1">
-                        {{ project.title }}
-                    </h3>
-                    <span class="text-xs px-3 py-1 rounded-full
-                        {% if project.status == 'ambiguous' %}
-                            bg-yellow-900 bg-opacity-50 text-yellow-300
-                        {% elif project.status == 'ready' %}
-                            bg-green-900 bg-opacity-50 text-green-300
-                        {% elif project.status == 'in_analysis' %}
-                            bg-blue-900 bg-opacity-50 text-blue-300
+        <a href="/project/{{ project.id }}" class="card p-6 group block">
+            <!-- Header with Title and Badge -->
+            <div class="flex items-start justify-between mb-4 gap-3">
+                <h3 class="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors duration-200 line-clamp-2 flex-1">
+                    {{ project.title }}
+                </h3>
+                <span class="badge flex-shrink-0
+                    {% if project.status == 'ambiguous' %}
+                        badge-warning
+                    {% elif project.status == 'ready' %}
+                        badge-success
+                    {% elif project.status == 'in_analysis' %}
+                        badge-info
+                    {% else %}
+                        badge-purple
+                    {% endif %}
+                ">
+                    {{ project.status }}
+                </span>
+            </div>
+            
+            <!-- Idea Preview -->
+            <p class="text-slate-400 text-sm line-clamp-2 mb-5 leading-relaxed">
+                {{ project.raw_idea[:100] }}...
+            </p>
+            
+            <!-- Variability Score -->
+            <div class="mb-5">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-slate-500 uppercase tracking-wider font-medium">Ambigüedad</span>
+                    <span class="text-sm font-bold
+                        {% if project.variability_score < 33 %}
+                            text-emerald-400
+                        {% elif project.variability_score < 67 %}
+                            text-amber-400
                         {% else %}
-                            bg-purple-900 bg-opacity-50 text-purple-300
-                        {% endif %}
-                    ">
-                        {{ project.status }}
+                            text-red-400
+                        {% endif %}">
+                        {{ "%.1f"|format(project.variability_score) }}%
                     </span>
                 </div>
-                
-                <!-- Idea preview -->
-                <p class="text-slate-400 text-sm line-clamp-2 mb-4">
-                    {{ project.raw_idea[:100] }}...
-                </p>
-                
-                <!-- Variability Score -->
-                <div class="mb-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs text-slate-500">Ambigüedad</span>
-                        <span class="text-xs font-semibold text-slate-300">{{ "%.1f"|format(project.variability_score) }}%</span>
-                    </div>
-                    <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all"
-                            style="width: {{ project.variability_score }}%;
-                            {% if project.variability_score < 33 %}
-                                background-color: #10b981;
-                            {% elif project.variability_score < 67 %}
-                                background-color: #f59e0b;
-                            {% else %}
-                                background-color: #ef4444;
-                            {% endif %}">
-                        </div>
+                <div class="progress-bar">
+                    <div class="progress-fill"
+                        style="width: {{ project.variability_score }}%;
+                        {% if project.variability_score < 33 %}
+                            background: linear-gradient(90deg, #10B981, #34D399);
+                        {% elif project.variability_score < 67 %}
+                            background: linear-gradient(90deg, #F59E0B, #FBBF24);
+                        {% else %}
+                            background: linear-gradient(90deg, #EF4444, #F87171);
+                        {% endif %}">
                     </div>
                 </div>
-                
-                <!-- Fecha -->
-                <div class="text-xs text-slate-500">
-                    Creado: {{ project.created_at.strftime('%d/%m/%Y') }}
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
+                <div class="flex items-center space-x-2 text-xs text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>{{ project.created_at.strftime('%d/%m/%Y') }}</span>
                 </div>
-            </a>
-        </div>
+                <div class="flex items-center text-blue-400 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <span>Ver detalles</span>
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+        </a>
         {% endfor %}
     </div>
     {% else %}
-    <div class="card p-12 text-center">
-        <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+    <!-- Empty State -->
+    <div class="card-static p-12 text-center">
+        <div class="w-20 h-20 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <svg class="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
             </svg>
         </div>
-        <h3 class="text-lg font-semibold text-white mb-2">No hay proyectos aún</h3>
-        <p class="text-slate-400 mb-6">Crea tu primer proyecto para comenzar el análisis de viabilidad</p>
+        <h3 class="text-xl font-semibold text-white mb-3">No hay proyectos aún</h3>
+        <p class="text-slate-400 mb-8 max-w-md mx-auto">Crea tu primer proyecto para comenzar el análisis de viabilidad con inteligencia artificial</p>
         {% if can_create_project %}
-        <a href="/project/create" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg hover:opacity-90 transition inline-block">
-            Crear primer proyecto
+        <a href="/project/create" class="btn-primary text-white font-semibold py-3 px-8 rounded-xl inline-flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <span>Crear primer proyecto</span>
         </a>
         {% endif %}
     </div>
