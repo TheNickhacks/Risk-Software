@@ -16,15 +16,23 @@ CREATE TABLE IF NOT EXISTS "user" (
     role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin', 'seller')),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Password Recovery Fields
+    reset_token VARCHAR(255) UNIQUE,
+    reset_token_expiry TIMESTAMP,
+    last_project_creation TIMESTAMP
 );
 
 CREATE INDEX idx_user_rut ON "user"(rut);
 CREATE INDEX idx_user_email ON "user"(email);
+CREATE INDEX idx_user_reset_token ON "user"(reset_token);
 
 COMMENT ON TABLE "user" IS 'Usuarios del sistema con validación RUT única (1 cuenta/RUT)';
 COMMENT ON COLUMN "user".rut IS 'RUT único de Chile (sin puntos ni guión)';
 COMMENT ON COLUMN "user".role IS 'Rol del usuario: user (emprendedor), admin, seller';
+COMMENT ON COLUMN "user".reset_token IS 'Token UUID para recuperación de contraseña (único, temporal)';
+COMMENT ON COLUMN "user".reset_token_expiry IS 'Fecha/hora de expiración del token de recuperación (1 hora)';
+COMMENT ON COLUMN "user".last_project_creation IS 'Timestamp del último proyecto creado (para rate limiting)';
 
 
 -- ============================================
@@ -304,6 +312,30 @@ COMMENT ON FUNCTION audit_user_changes IS 'Audita cambios realizados en perfiles
 -- ('emprendedor@preincubadora.cl', 'hashed_password_here', '98765432-1', 'Juan Pérez', 'user');
 
 -- INSERT INTO project (user_id, title, raw_idea, variability_score, status) VALUES
+-- (1, 'App de Delivery', 'Vender comida en línea', 35, 'ready');
+
+
+-- ============================================
+-- MIGRACIONES Y ACTUALIZACIONES
+-- ============================================
+
+-- MIGRACIÓN: Agregar campos de recuperación de contraseña (2026-01-19)
+-- Ejecutar esta sección si la tabla "user" ya existe sin estos campos
+/*
+ALTER TABLE "user"
+ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255) UNIQUE,
+ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP,
+ADD COLUMN IF NOT EXISTS last_project_creation TIMESTAMP;
+
+-- Crear índice para el token de recuperación
+CREATE INDEX IF NOT EXISTS idx_user_reset_token ON "user"(reset_token);
+
+-- Actualizar comentarios
+COMMENT ON COLUMN "user".reset_token IS 'Token UUID para recuperación de contraseña (único, temporal)';
+COMMENT ON COLUMN "user".reset_token_expiry IS 'Fecha/hora de expiración del token de recuperación (1 hora)';
+COMMENT ON COLUMN "user".last_project_creation IS 'Timestamp del último proyecto creado (para rate limiting)';
+*/
+
 -- (2, 'Plataforma de Delivery Local', 'Una app para pedir comida de restaurantes cercanos', 45, 'ambiguous'),
 -- (2, 'Software de Gestión de Riesgos', 'Sistema para analizar y mitigar riesgos empresariales', 72, 'ready');
 
