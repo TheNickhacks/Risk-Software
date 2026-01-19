@@ -140,23 +140,35 @@ El equipo de PreIncubadora AI
             msg.attach(part1)
             msg.attach(part2)
             
-            # Enviar correo
-            # En desarrollo, mostrar mensaje en logs si no hay SMTP configurado
-            if not self.sender_password:
-                logger.warning(f"Email no configurado. Se habría enviado reset a: {recipient_email}")
-                logger.info(f"Token: {reset_token}")
-                return True, "Correo enviado correctamente (desarrollo)"
+            # Verificar si SMTP está configurado
+            if not self.sender_email or not self.sender_password:
+                logger.warning("⚠️  Email SMTP no configurado. Modo DESARROLLO activado.")
+                logger.warning(f"📧 Correo HABRÍA sido enviado a: {recipient_email}")
+                logger.info(f"🔑 Token de recuperación: {reset_token}")
+                logger.info(f"🔗 Enlace: http://127.0.0.1:5000/reset-password/{reset_token}")
+                return True, "Correo enviado correctamente (modo desarrollo - sin SMTP configurado)"
             
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.starttls()
-                server.login(self.sender_email, self.sender_password)
-                server.send_message(msg)
-            
-            logger.info(f"Correo de recuperación enviado a: {recipient_email}")
-            return True, "Correo de recuperación enviado exitosamente"
+            # Enviar correo con SMTP configurado
+            try:
+                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                    server.starttls()
+                    server.login(self.sender_email, self.sender_password)
+                    server.send_message(msg)
+                
+                logger.info(f"✅ Correo de recuperación enviado a: {recipient_email}")
+                return True, "Correo de recuperación enviado exitosamente"
+            except smtplib.SMTPAuthenticationError as auth_error:
+                error_msg = f"❌ Error de autenticación SMTP: Credenciales inválidas. Verifica SENDER_EMAIL y SENDER_PASSWORD en .env"
+                logger.error(error_msg)
+                logger.error(f"Detalles del error: {str(auth_error)}")
+                return False, error_msg
+            except smtplib.SMTPException as smtp_error:
+                error_msg = f"❌ Error SMTP: {str(smtp_error)}"
+                logger.error(error_msg)
+                return False, error_msg
             
         except Exception as e:
-            logger.error(f"Error al enviar correo de recuperación: {str(e)}")
+            logger.error(f"❌ Error al enviar correo de recuperación: {str(e)}")
             return False, f"Error al enviar correo: {str(e)}"
 
 
