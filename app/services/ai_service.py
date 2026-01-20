@@ -100,26 +100,23 @@ ESCALA DE VIABILIDAD:
 - 0-39: No viable en contexto actual (ROJO)
 """
 
-    # Banco de preguntas clave (concisas, ≤20 palabras)
+    # Banco de preguntas clave: máximo 3 preguntas por fase para cubrir 9 pilares en 10 mensajes
+    # Estructura optimizada para eficiencia: 9 preguntas en total
     QUESTIONS_BANK = [
-        "¿Cuál es el mercado objetivo específico y su tamaño estimado?",
-        "¿Qué segmento de clientes inicial abordarás y por qué?",
-        "¿Cuál es el problema concreto que resuelves?",
-        "¿Cómo te diferencias de los competidores clave?",
-        "¿Cuál será el precio promedio y el margen bruto?",
-        "¿Qué canales usarás para adquirir clientes? CAC estimado",
-        "¿Cuál es el costo fijo mensual y costos variables principales?",
-        "¿Cuál es el punto de equilibrio y volumen mínimo?",
-        "¿Qué validaciones previas tienes (encuestas, ventas, pilotos)?",
-        "¿Cuáles son los mayores riesgos y cómo los mitigas?",
-        "¿Qué restricciones operativas o regulatorias existen?",
-        "¿Qué capacidades técnicas necesitas y cómo las obtendrás?",
-        "¿Cómo asegurarás calidad, garantía y postventa?",
-        "¿Cuál es el flujo de caja esperado 6 meses?",
-        "¿Qué KPIs clave medirás en el inicio?",
-        "¿Cuál es tu estrategia de escalabilidad y límites actuales?",
-        "¿Cómo manejarás devoluciones, soporte y servicio?",
-        "¿Qué datos sensibles manejas y cómo los protegerás?",
+        # Fase 1 - Problema, Mercado, Propuesta (Pilares 1,3,2)
+        "¿Cuál es el problema específico que resuelve tu idea y quién lo tiene?",
+        "¿Cuál es tu mercado objetivo, tamaño estimado y por qué es diferente?",
+        "¿Cómo te diferencias de competidores y qué única ventaja ofreces?",
+        
+        # Fase 2 - Validación, Modelo económico, Costos (Pilares 9,4,5)
+        "¿Cómo validarás tu idea? ¿Tienes encuestas, pilotos o datos de demanda?",
+        "¿Cuál será tu precio promedio, costo unitario y margen bruto estimado?",
+        "¿Cuáles son tus costos fijos mensuales y el punto de equilibrio?",
+        
+        # Fase 3 - Riesgos, Técnica, Escalabilidad (Pilares 7,6,8)
+        "¿Cuál es tu mayor riesgo y cómo lo mitigarás operativamente?",
+        "¿Qué capacidades técnicas necesitas? ¿Las tienes o cómo las obtendrás?",
+        "¿Cómo escalarás sin perder calidad? ¿Cuáles son los límites actuales?",
     ]
     
     def __init__(self, api_key: str):
@@ -337,28 +334,31 @@ Responde SOLO en JSON VÁLIDO (sin markdown, sin texto adicional):
     def generate_clarification_reply(self, raw_idea: str, conversation_context: str) -> str:
         """
         Genera la siguiente intervención del asistente en la sesión de clarificación.
-        Debe revisar el historial y:
-        - Si faltan datos, formular UNA pregunta breve y concreta (<= 20 palabras)
-        - Si hay datos suficientes, hacer un breve resumen (2-3 frases) y pedir siguiente dato crítico
+        Optimizado: SOLO pregunta crítica (sin resumen redundante que haga parecer tonto el sistema).
+        Máximo 3 preguntas por fase para completar análisis en 10 mensajes.
         """
         raw_idea = self.sanitize_input(raw_idea)
-        context = conversation_context or ""
+        context = self.sanitize_input(conversation_context or "")
 
-        prompt = f"""
-{self.SYSTEM_PROMPT}
+        prompt = f"""{self.SYSTEM_PROMPT}
 
-CONTEXTO DE CONVERSACIÓN (historial):
+CONTEXTO DE CONVERSACIÓN:
 {context}
 
 IDEA ORIGINAL:
 "{raw_idea}"
 
-TAREA:
-    - Responde en español con lenguaje simple y bloques cortos.
-    - Si faltan datos: devuelve SOLO una pregunta clara, específica y corta (<= 20 palabras).
-    - Si hay suficiente contexto: devuelve un mini-resumen (2-3 frases) y solicita el próximo dato crítico.
-    - Tono clarificador: ayudamos a decidir, no a emprender.
-    - No uses formato markdown, viñetas ni código. Respuesta directa.
+INSTRUCCIONES CRÍTICAS:
+1. Responde SOLO con la siguiente pregunta crítica.
+2. NO resumas lo que el usuario dijo (evita redundancia).
+3. NO confirmes información que ya compartió.
+4. La pregunta debe ser específica, corta (≤20 palabras) y accionable.
+5. Lenguaje simple, directo, sin markdown ni adornos.
+6. Tono clarificador: ayudamos a decidir la viabilidad.
+7. Máximo 3 preguntas por fase para completar en 10 mensajes.
+8. Enfócate en los 9 pilares: problema, propuesta, mercado, validación, costos, técnica, riesgos, escalabilidad, modelo económico.
+
+RESPONDE SOLO CON LA PREGUNTA. Nada más.
 """
         try:
             text = self._generate_with_fallback(prompt)
@@ -368,7 +368,7 @@ TAREA:
             return text.strip()
         except Exception as e:
             logger.error(f"Error generating clarification reply: {e}")
-            return "Gracias. ¿Cuál es tu mercado objetivo específico y el volumen estimado?"
+            return "¿Cuál es el problema específico que resuelve tu idea?"
     
     def generate_business_plan(self, raw_idea: str, clarifications: str = None) -> Dict:
         """
