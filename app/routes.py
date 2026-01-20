@@ -478,18 +478,17 @@ def send_message():
         
         # Generar respuesta según tipo de sesión
         if session.session_type == "clarification":
-            ai_response = ai.generate_clarification_reply(
-                project.raw_idea,
-                conversation_context
-            )
-        else:
-            # Análisis completo
-            plan = ai.generate_business_plan(
-                project.raw_idea,
-                clarifications=conversation_context
-            )
-            # Por ahora, guardar el plan
-            if not project.business_plan:
+            # En mensaje 5-6, generar plan de negocio y pasar a análisis
+            if session.message_count >= 10 and not project.business_plan:  # 5 intercambios = 10 mensajes (5 user + 5 assistant)
+                logger.info(f"[INFO] Generando plan de negocio en mensaje {session.message_count} para proyecto {project.id}")
+                
+                # Generar plan de negocio basado en clarificaciones
+                plan = ai.generate_business_plan(
+                    project.raw_idea,
+                    clarifications=conversation_context
+                )
+                
+                # Guardar plan en base de datos
                 bp = BusinessPlan(
                     project_id=project.id,
                     problem_statement=plan.get("problem_statement", ""),
@@ -506,9 +505,25 @@ def send_message():
                     recommendation=plan.get("recommendation", "not_viable")
                 )
                 db.session.add(bp)
+                
+                # Cambiar a sesión de análisis
+                session.session_type = "analysis"
                 db.session.commit()
-            
-            ai_response = plan.get("overall_assessment", "Plan generado exitosamente")
+                
+                # Construir respuesta formateada con los 9 pilares
+                ai_response = ai.format_business_plan_for_chat(plan)
+            else:
+                # Continuar con preguntas de clarificación
+                ai_response = ai.generate_clarification_reply(
+                    project.raw_idea,
+                    conversation_context
+                )
+        else:
+            # En sesión de análisis, continuar con debate sobre el plan
+            ai_response = ai.generate_clarification_reply(
+                project.raw_idea,
+                conversation_context
+            )
         
         # Guardar respuesta de IA
         ai_message = ChatMessage(

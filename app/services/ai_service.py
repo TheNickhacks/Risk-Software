@@ -438,16 +438,68 @@ INSTRUCCIONES CRÍTICAS:
             logger.error(f"Error generating business plan: {e}")
             return self._create_fallback_plan(raw_idea)
     
-    def _create_fallback_plan(self, raw_idea: str) -> Dict:
-        """Plan de negocio por defecto en caso de error"""
-        return {
-            "problem_statement": "Requiere análisis más detallado",
-            "value_proposition": "Por definir",
-            "target_market": "Por definir",
-            "revenue_model": "Por definir",
-            "cost_analysis": "Por definir",
-            "technical_feasibility": "Por definir",
-            "risks_analysis": "Por definir",
+    def format_business_plan_for_chat(self, plan: Dict) -> str:
+        """
+        Formatear plan de negocio para presentación en chat.
+        Resumen ejecutivo con los 9 pilares de viabilidad.
+        
+        Args:
+            plan: Dictionary con análisis de viabilidad
+            
+        Returns:
+            String formateado para el chat
+        """
+        viability_score = plan.get("viability_score", 0)
+        recommendation = plan.get("recommendation", "not_viable")
+        
+        # Determinar etiqueta de viabilidad
+        if viability_score >= 80:
+            status = "VIABLE Y ESCALABLE"
+        elif viability_score >= 60:
+            status = "VIABLE CON AJUSTES"
+        elif viability_score >= 40:
+            status = "REQUIERE PIVOTE"
+        else:
+            status = "NO VIABLE"
+        
+        response = f"""PLAN DE NEGOCIO GENERADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Viabilidad: {viability_score}/100 [{status}]
+
+9 PILARES DE ANÁLISIS:
+
+1. Problema
+{plan.get('problem_statement', 'Por definir')[:200]}...
+
+2. Propuesta de Valor
+{plan.get('value_proposition', 'Por definir')[:200]}...
+
+3. Mercado Objetivo
+{plan.get('target_market', 'Por definir')[:200]}...
+
+4. Modelo de Ingresos
+{plan.get('revenue_model', 'Por definir')[:200]}...
+
+5. Análisis de Costos
+{plan.get('cost_analysis', 'Por definir')[:200]}...
+
+6. Viabilidad Técnica
+{plan.get('technical_feasibility', 'Por definir')[:200]}...
+
+7. Riesgos y Mitigación
+{plan.get('risks_analysis', 'Por definir')[:200]}...
+
+8. Potencial de Escalabilidad
+{plan.get('scalability_potential', 'Por definir')[:200]}...
+
+9. Estrategia de Validación
+{plan.get('validation_strategy', 'Por definir')[:200]}...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Ahora puedes debatir cualquier aspecto del plan."""
+        
+        return response
             "scalability_potential": "Por definir",
             "validation_strategy": "Por definir",
             "overall_assessment": "Error en generación automática. Por favor, intenta de nuevo.",
