@@ -57,14 +57,20 @@ class IncubatorAI:
         "Validación"
     ]
     
-    SYSTEM_PROMPT = """Eres un analista de viabilidad de negocios experto. 
+    SYSTEM_PROMPT = """Eres un analista de viabilidad de negocios experto.
 Tu rol es evaluar ideas de negocio de forma rigurosa bajo un enfoque de "Realismo Constructivo".
+
+LINEAMIENTOS DE COMUNICACIÓN (CHAT):
+- Usa lenguaje simple y directo.
+- Entrega información en bloques cortos.
+- Tono clarificador: ayuda a decidir, no a emprender.
+- Evita adornos, jergas y formato innecesario.
 
 PRINCIPIOS FUNDAMENTALES:
 1. Sé analítico y basado en datos. Evita optimismo excesivo.
-2. Si una idea es inviable, presente el análisis completo y sugiera pivotes estratégicos.
-3. Estructura toda respuesta bajo los 9 Pilares de Viabilidad.
-4. Mantén un tono profesional, educativo y constructivo.
+2. Si una idea es inviable, presenta el análisis y sugiere pivotes estratégicos.
+3. Estructura respuestas bajo los 9 Pilares de Viabilidad cuando corresponda.
+4. Mantén tono profesional, educativo y constructivo.
 5. Proporciona accionables específicos, no genéricos.
 
 ESCALA DE VIABILIDAD:
@@ -73,6 +79,28 @@ ESCALA DE VIABILIDAD:
 - 40-59: Requiere pivote estratégico (NARANJA)
 - 0-39: No viable en contexto actual (ROJO)
 """
+
+    # Banco de preguntas clave (concisas, ≤20 palabras)
+    QUESTIONS_BANK = [
+        "¿Cuál es el mercado objetivo específico y su tamaño estimado?",
+        "¿Qué segmento de clientes inicial abordarás y por qué?",
+        "¿Cuál es el problema concreto que resuelves?",
+        "¿Cómo te diferencias de los competidores clave?",
+        "¿Cuál será el precio promedio y el margen bruto?",
+        "¿Qué canales usarás para adquirir clientes? CAC estimado",
+        "¿Cuál es el costo fijo mensual y costos variables principales?",
+        "¿Cuál es el punto de equilibrio y volumen mínimo?",
+        "¿Qué validaciones previas tienes (encuestas, ventas, pilotos)?",
+        "¿Cuáles son los mayores riesgos y cómo los mitigas?",
+        "¿Qué restricciones operativas o regulatorias existen?",
+        "¿Qué capacidades técnicas necesitas y cómo las obtendrás?",
+        "¿Cómo asegurarás calidad, garantía y postventa?",
+        "¿Cuál es el flujo de caja esperado 6 meses?",
+        "¿Qué KPIs clave medirás en el inicio?",
+        "¿Cuál es tu estrategia de escalabilidad y límites actuales?",
+        "¿Cómo manejarás devoluciones, soporte y servicio?",
+        "¿Qué datos sensibles manejas y cómo los protegerás?",
+    ]
     
     def __init__(self, api_key: str):
         """Inicializar cliente de Gemini con sistema de fallback"""
@@ -245,10 +273,14 @@ Donde:
 
 Genera exactamente {num_questions} preguntas clave para CLARIFICAR y VALIDAR la idea.
 Requisitos de las preguntas:
-- Muy concisas (máximo 20 palabras)
-- Específicas y sin ambigüedad
-- Enfocadas en puntos vagos o críticos
-- Orientadas a obtener información cuantificable
+- Lenguaje simple y tono clarificador.
+- Bloques cortos (máximo 20 palabras).
+- Específicas y sin ambigüedad.
+- Enfocadas en puntos vagos o críticos.
+- Orientadas a obtener información cuantificable.
+
+BANCO DE PREGUNTAS DISPONIBLE (usa las más relevantes; si faltan, crea nuevas del mismo estilo):
+{json.dumps(self.QUESTIONS_BANK, ensure_ascii=False)}
 
 Responde SOLO en JSON VÁLIDO (sin markdown, sin texto adicional):
 {{
@@ -291,10 +323,11 @@ IDEA ORIGINAL:
 "{raw_idea}"
 
 TAREA:
-- Responde en español.
-- Si faltan datos: devuelve SOLO una pregunta clara, específica y corta (<= 20 palabras).
-- Si hay suficiente contexto: devuelve un mini-resumen (2-3 frases) y solicita el próximo dato crítico.
-- No uses formato markdown, viñetas ni código. Respuesta directa.
+    - Responde en español con lenguaje simple y bloques cortos.
+    - Si faltan datos: devuelve SOLO una pregunta clara, específica y corta (<= 20 palabras).
+    - Si hay suficiente contexto: devuelve un mini-resumen (2-3 frases) y solicita el próximo dato crítico.
+    - Tono clarificador: ayudamos a decidir, no a emprender.
+    - No uses formato markdown, viñetas ni código. Respuesta directa.
 """
         try:
             text = self._generate_with_fallback(prompt)
