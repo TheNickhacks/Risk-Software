@@ -126,6 +126,40 @@ ESCALA DE VIABILIDAD:
         """Inicializar modelo actual basado en el índice de prioridad"""
         model_name = self.MODEL_PRIORITY[self.current_model_index]
         return genai.GenerativeModel(model_name)
+
+    @staticmethod
+    def _extract_json_payload(text: str):
+        """Extrae un payload JSON válido desde texto que pueda contener ruido/markdown.
+
+        Soporta objetos y arreglos como raíz. Elimina bloques ```json y ``` si existen,
+        y recorta al primer '{' o '[' hasta el último '}' o ']'.
+        """
+        if not text:
+            raise json.JSONDecodeError("Respuesta vacía", text, 0)
+        cleaned = text.strip()
+        if cleaned.startswith("```json"):
+            cleaned = cleaned[7:]
+        if cleaned.startswith("```"):
+            cleaned = cleaned[3:]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+
+        start_obj = cleaned.find('{')
+        start_arr = cleaned.find('[')
+        starts = [i for i in [start_obj, start_arr] if i != -1]
+        if not starts:
+            raise json.JSONDecodeError("No se encontró JSON (objeto/arreglo)", cleaned, 0)
+        start = min(starts)
+
+        end_obj = cleaned.rfind('}')
+        end_arr = cleaned.rfind(']')
+        ends = [i for i in [end_obj, end_arr] if i != -1 and i >= start]
+        if not ends:
+            raise json.JSONDecodeError("JSON incompleto: falta cierre", cleaned, len(cleaned))
+        end = max(ends) + 1
+
+        payload = cleaned[start:end]
+        return json.loads(payload)
     
     def _try_next_model(self):
         """Cambiar al siguiente modelo en la lista de prioridad"""
@@ -174,11 +208,11 @@ ESCALA DE VIABILIDAD:
         # Sanitizar input del usuario
         raw_idea = self.sanitize_input(raw_idea)
         
-        prompt = f"""Analiza el siguiente pitch de negocio e indica su grado de ambigüedad.
+                prompt = f"""Analiza el siguiente pitch de negocio e indica su grado de ambigüedad.
 
 PITCH: "{raw_idea}"
 
-Responde SOLO en JSON con esta estructura:
+Responde SOLO en JSON VÁLIDO (sin markdown, sin texto adicional) con esta estructura exacta:
 {{
   "variability_score": <número 0-100>,
   "requires_clarification": <true/false>,
@@ -190,8 +224,8 @@ Donde:
 - Considera variables como: falta de target market específico, modelo de ingresos ambiguo, etc.
 """
         try:
-            response_text = self._generate_with_fallback(prompt)
-            data = json.loads(response_text)
+                        response_text = self._generate_with_fallback(prompt)
+                        data = self._extract_json_payload(response_text)
             return float(data.get("variability_score", 50)), data.get("requires_clarification", True)
         except Exception as e:
             logger.error(f"Error evaluating ambiguity: {e}")
@@ -215,15 +249,19 @@ Las preguntas deben ser:
 - Enfocadas en los puntos débiles o vagos
 - Orientadas a obtener información cuantificable
 
-Responde SOLO en JSON:
+Responde SOLO en JSON VÁLIDO (sin markdown, sin texto adicional):
 {{
   "questions": ["pregunta1", "pregunta2", "pregunta3"]
 }}
 """
         try:
             response_text = self._generate_with_fallback(prompt)
-            data = json.loads(response_text)
-            return data.get("questions", [])
+            data = self._extract_json_payload(response_text)
+            if isinstance(data, dict):
+                return data.get("questions", [])
+            if isinstance(data, list):
+                return data
+            return []
         except Exception as e:
             logger.error(f"Error generating clarification questions: {e}")
             return [
