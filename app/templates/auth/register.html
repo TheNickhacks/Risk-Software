@@ -109,25 +109,27 @@
                     </p>
                 </div>
                 
-                <!-- Terms -->
-                <div class="p-4 bg-slate-900/30 border border-slate-700/50 rounded-xl">
+                <!-- GDPR Consent Checkbox (OBLIGATORIO, NO PRE-MARCADO) -->
+                <div class="p-4 bg-gradient-to-br from-blue-900/20 to-blue-800/10 border border-blue-700/30 rounded-xl">
                     <label class="flex items-start gap-3 cursor-pointer group">
                         <div class="relative mt-0.5">
                             <input
                                 type="checkbox"
-                                id="terms"
-                                name="terms"
+                                id="consent"
+                                name="consent"
                                 required
                                 class="peer sr-only"
                             />
-                            <div class="w-5 h-5 border-2 border-slate-600 rounded-md bg-slate-900/50 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all duration-200"></div>
+                            <div class="w-5 h-5 border-2 border-blue-600 rounded-md bg-slate-900/50 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all duration-200"></div>
                             <svg class="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                             </svg>
                         </div>
-                        <span class="text-xs text-slate-400 leading-relaxed">
-                            Acepto los <a href="#" class="text-blue-400 hover:text-blue-300">terminos de servicio</a> y la <a href="#" class="text-blue-400 hover:text-blue-300">politica de privacidad</a>.
-                            Reconozco que mis datos se procesaran bajo GDPR/LPD.
+                        <span class="text-xs text-slate-300 leading-relaxed">
+                            <strong class="text-blue-400">★ CONSENTIMIENTO OBLIGATORIO (GDPR/LPD):</strong><br>
+                            Autorizo el uso de mis datos para la generación del reporte de viabilidad y para ser contactado con fines de consultoría comercial. 
+                            Acepto que mi idea de negocio será procesada mediante la API de Google Gemini bajo las condiciones descritas en la 
+                            <a href="/privacy" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Política de Privacidad</a>.
                         </span>
                     </label>
                 </div>

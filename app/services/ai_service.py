@@ -2,6 +2,7 @@ import google.generativeai as genai
 from typing import Dict, List, Tuple
 import json
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,25 @@ class IncubatorAI:
     Servicio de IA para evaluación de ideas de negocio.
     Sistema de fallback automático entre modelos (mejor → peor calidad).
     Cambia automáticamente cuando se excede cuota gratuita.
+    Incluye sanitización anti-Prompt Injection para proteger el sistema.
     """
+    
+    # Patrones de Prompt Injection detectados
+    INJECTION_PATTERNS = [
+        r"ignore\s+(previous|all|above|prior)\s+instructions?",
+        r"disregard\s+(previous|all|above|prior)\s+instructions?",
+        r"forget\s+(previous|all|above|prior)\s+(instructions?|prompts?)",
+        r"(new|different|updated)\s+instructions?:",
+        r"system\s*:\s*you\s+are",
+        r"you\s+are\s+now\s+(a|an)\s+",
+        r"roleplay\s+as",
+        r"act\s+as\s+(if|though|a|an)",
+        r"pretend\s+(you|to\s+be)",
+        r"<\s*script\s*>",
+        r"javascript\s*:",
+        r"eval\s*\(",
+        r"exec\s*\(",
+    ]
     
     # Modelos priorizados para análisis de texto (mejor → peor)
     MODEL_PRIORITY = [
@@ -63,6 +82,46 @@ ESCALA DE VIABILIDAD:
         self.model = self._initialize_model()
         logger.info(f"✅ Modelo inicializado: {self.MODEL_PRIORITY[self.current_model_index]}")
     
+    @staticmethod
+    def sanitize_input(user_input: str) -> str:
+        """
+        Sanitizar input de usuario para prevenir Prompt Injection.
+        
+        Args:
+            user_input: Texto ingresado por el usuario
+            
+        Returns:
+            Texto sanitizado o excepción si se detecta ataque
+            
+        Raises:
+            ValueError: Si se detecta intento de Prompt Injection
+        """
+        if not user_input or not isinstance(user_input, str):
+            return ""
+        
+        # Normalizar a minúsculas para detección
+        normalized = user_input.lower()
+        
+        # Detectar patrones maliciosos
+        for pattern in IncubatorAI.INJECTION_PATTERNS:
+            if re.search(pattern, normalized, re.IGNORECASE):
+                logger.warning(f"🚨 Intento de Prompt Injection detectado: {pattern}")
+                raise ValueError(
+                    "Input no válido: Se detectó contenido potencialmente malicioso. "
+                    "Por favor, describe tu idea de negocio sin incluir instrucciones al sistema."
+                )
+        
+        # Limitar longitud (protección adicional contra ataques de contexto)
+        max_length = 5000
+        if len(user_input) > max_length:
+            logger.warning(f"⚠️ Input excede longitud máxima: {len(user_input)} caracteres")
+            user_input = user_input[:max_length]
+        
+        # Remover caracteres de control (excepto saltos de línea y tabs)
+        sanitized = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', user_input)
+        
+        return sanitized.strip()
+    
     def _initialize_model(self):
         """Inicializar modelo actual basado en el índice de prioridad"""
         model_name = self.MODEL_PRIORITY[self.current_model_index]
@@ -85,8 +144,8 @@ ESCALA DE VIABILIDAD:
         Intenta con el modelo actual, si falla por cuota (429), prueba el siguiente.
         """
         attempts = 0
-        while attemp_text = self._generate_with_fallback(prompt)
-            data = json.loads(response_
+        while attempts < max_retries:
+            try:
                 response = self.model.generate_content(prompt)
                 return response.text
             except Exception as e:
@@ -107,10 +166,14 @@ ESCALA DE VIABILIDAD:
     def evaluate_ambiguity(self, raw_idea: str) -> Tuple[float, bool]:
         """
         Evaluar el grado de ambigüedad de una idea.
+        Incluye sanitización anti-Prompt Injection.
         
         Returns:
             (variability_score: 0-100, requires_clarification: bool)
         """
+        # Sanitizar input del usuario
+        raw_idea = self.sanitize_input(raw_idea)
+        
         prompt = f"""Analiza el siguiente pitch de negocio e indica su grado de ambigüedad.
 
 PITCH: "{raw_idea}"
@@ -137,7 +200,11 @@ Donde:
     def generate_clarification_questions(self, raw_idea: str, num_questions: int = 3) -> List[str]:
         """
         Generar preguntas de clarificación sobre la idea.
+        Incluye sanitización anti-Prompt Injection.
         """
+        # Sanitizar input del usuario
+        raw_idea = self.sanitize_input(raw_idea)
+        
         prompt = f"""El usuario presentó esta idea de negocio:
 
 "{raw_idea}"
@@ -168,6 +235,7 @@ Responde SOLO en JSON:
     def generate_business_plan(self, raw_idea: str, clarifications: str = None) -> Dict:
         """
         Generar plan de negocio estructurado bajo los 9 Pilares.
+        Incluye sanitización anti-Prompt Injection.
         
         Args:
             raw_idea: La idea original presentada
@@ -176,6 +244,11 @@ Responde SOLO en JSON:
         Returns:
             Dictionary con análisis completo de viabilidad
         """
+        # Sanitizar ambos inputs
+        raw_idea = self.sanitize_input(raw_idea)
+        if clarifications:
+            clarifications = self.sanitize_input(clarifications)
+        
         context = f"IDEA ORIGINAL:\n{raw_idea}"
         if clarifications:
             context += f"\n\nCLARIFICACIONES DEL USUARIO:\n{clarifications}"
@@ -221,7 +294,7 @@ INSTRUCCIONES CRÍTICAS:
             plan = json.loads(text.strip())
             return plan
         except json.JSONDecodeError as e:
-            logger.error(f"JSON parsing error: {e}. Response: {response.text}")
+            logger.error(f"JSON parsing error: {e}. Response: {text}")
             return self._create_fallback_plan(raw_idea)
         except Exception as e:
             logger.error(f"Error generating business plan: {e}")
@@ -248,7 +321,11 @@ INSTRUCCIONES CRÍTICAS:
     def generate_pivot_session(self, raw_idea: str, failing_pillars: List[str]) -> Dict:
         """
         Generar sesión de pivote estratégico cuando la idea no es viable.
+        Incluye sanitización anti-Prompt Injection.
         """
+        # Sanitizar input del usuario
+        raw_idea = self.sanitize_input(raw_idea)
+        
         prompt = f"""{self.SYSTEM_PROMPT}
 
 IDEA ORIGINAL: "{raw_idea}"

@@ -24,13 +24,20 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(db.String(255), unique=True, nullable=True, index=True)
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
     
+    # GDPR/LPD Compliance
+    consent_given = db.Column(db.Boolean, default=False, nullable=False)
+    consent_timestamp = db.Column(db.DateTime, nullable=True)
+    consent_ip = db.Column(db.String(45), nullable=True)  # IPv4 o IPv6
+    consent_version = db.Column(db.String(20), nullable=True)  # Versión de T&C aceptada
+    scheduled_deletion = db.Column(db.DateTime, nullable=True)  # Para soft delete
+    
     # Relaciones
     projects = db.relationship("Project", back_populates="user", cascade="all, delete-orphan")
     audit_logs = db.relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
     
     def set_password(self, password: str) -> None:
-        """Hashear password con bcrypt usando la librería bcrypt"""
-        hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+        """Hashear password con bcrypt usando work factor 12 (requisito de seguridad)"""
+        hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=12))
         self.password_hash = hashed.decode("utf-8")
     
     def check_password(self, password: str) -> bool:
@@ -65,6 +72,32 @@ class User(UserMixin, db.Model):
         """Limpiar el token de recuperación después de ser usado"""
         self.reset_token = None
         self.reset_token_expiry = None
+        db.session.commit()
+    
+    def record_consent(self, ip_address: str, terms_version: str = "1.0") -> None:
+        """Registrar consentimiento GDPR/LPD con trazabilidad completa"""
+        self.consent_given = True
+        self.consent_timestamp = datetime.utcnow()
+        self.consent_ip = ip_address
+        self.consent_version = terms_version
+        db.session.commit()
+    
+    def schedule_deletion(self, days: int = 30) -> None:
+        """Programar eliminación de cuenta (soft delete)"""
+        self.is_active = False
+        self.scheduled_deletion = datetime.utcnow() + timedelta(days=days)
+        db.session.commit()
+    
+    def cancel_deletion(self) -> None:
+        """Cancelar eliminación programada"""
+        self.is_active = True
+        self.scheduled_deletion = None
+        db.session.commit()
+    
+    def hard_delete(self) -> None:
+        """Eliminación física permanente (GDPR Right to Erasure)"""
+        # Los proyectos y audit_logs se eliminan automáticamente por cascade
+        db.session.delete(self)
         db.session.commit()
     
     def __repr__(self) -> str:

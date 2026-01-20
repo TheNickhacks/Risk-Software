@@ -20,12 +20,19 @@ CREATE TABLE IF NOT EXISTS "user" (
     -- Password Recovery Fields
     reset_token VARCHAR(255) UNIQUE,
     reset_token_expiry TIMESTAMP,
-    last_project_creation TIMESTAMP
+    last_project_creation TIMESTAMP,
+    -- GDPR/LPD Compliance Fields
+    consent_given BOOLEAN DEFAULT FALSE NOT NULL,
+    consent_timestamp TIMESTAMP,
+    consent_ip VARCHAR(45),
+    consent_version VARCHAR(20),
+    scheduled_deletion TIMESTAMP
 );
 
 CREATE INDEX idx_user_rut ON "user"(rut);
 CREATE INDEX idx_user_email ON "user"(email);
 CREATE INDEX idx_user_reset_token ON "user"(reset_token);
+CREATE INDEX idx_user_scheduled_deletion ON "user"(scheduled_deletion);
 
 COMMENT ON TABLE "user" IS 'Usuarios del sistema con validación RUT única (1 cuenta/RUT)';
 COMMENT ON COLUMN "user".rut IS 'RUT único de Chile (sin puntos ni guión)';
@@ -33,6 +40,11 @@ COMMENT ON COLUMN "user".role IS 'Rol del usuario: user (emprendedor), admin, se
 COMMENT ON COLUMN "user".reset_token IS 'Token UUID para recuperación de contraseña (único, temporal)';
 COMMENT ON COLUMN "user".reset_token_expiry IS 'Fecha/hora de expiración del token de recuperación (1 hora)';
 COMMENT ON COLUMN "user".last_project_creation IS 'Timestamp del último proyecto creado (para rate limiting)';
+COMMENT ON COLUMN "user".consent_given IS 'GDPR: Consentimiento explícito otorgado por el usuario';
+COMMENT ON COLUMN "user".consent_timestamp IS 'GDPR: Fecha/hora exacta del consentimiento (trazabilidad)';
+COMMENT ON COLUMN "user".consent_ip IS 'GDPR: IP desde donde se otorgó el consentimiento';
+COMMENT ON COLUMN "user".consent_version IS 'GDPR: Versión de los Términos y Condiciones aceptada';
+COMMENT ON COLUMN "user".scheduled_deletion IS 'GDPR: Fecha programada para hard delete (30 días tras soft delete)';
 
 
 -- ============================================
@@ -332,6 +344,35 @@ CREATE INDEX IF NOT EXISTS idx_user_reset_token ON "user"(reset_token);
 
 -- Actualizar comentarios
 COMMENT ON COLUMN "user".reset_token IS 'Token UUID para recuperación de contraseña (único, temporal)';
+COMMENT ON COLUMN "user".reset_token_expiry IS 'Fecha/hora de expiración del token de recuperación (1 hora)';
+COMMENT ON COLUMN "user".last_project_creation IS 'Timestamp del último proyecto creado (para rate limiting)';
+*/
+
+-- MIGRACIÓN: Agregar campos GDPR/LPD (2026-01-19)
+-- Ejecutar esta sección para agregar conformidad con GDPR/LPD
+/*
+ALTER TABLE "user"
+ADD COLUMN IF NOT EXISTS consent_given BOOLEAN DEFAULT FALSE NOT NULL,
+ADD COLUMN IF NOT EXISTS consent_timestamp TIMESTAMP,
+ADD COLUMN IF NOT EXISTS consent_ip VARCHAR(45),
+ADD COLUMN IF NOT EXISTS consent_version VARCHAR(20),
+ADD COLUMN IF NOT EXISTS scheduled_deletion TIMESTAMP;
+
+-- Crear índice para eliminaciones programadas
+CREATE INDEX IF NOT EXISTS idx_user_scheduled_deletion ON "user"(scheduled_deletion);
+
+-- Actualizar usuarios existentes (migración data)
+UPDATE "user" SET consent_given = TRUE WHERE consent_given IS NULL OR consent_given = FALSE;
+UPDATE "user" SET consent_timestamp = created_at WHERE consent_timestamp IS NULL;
+UPDATE "user" SET consent_version = '1.0' WHERE consent_version IS NULL;
+
+-- Actualizar comentarios
+COMMENT ON COLUMN "user".consent_given IS 'GDPR: Consentimiento explícito otorgado por el usuario';
+COMMENT ON COLUMN "user".consent_timestamp IS 'GDPR: Fecha/hora exacta del consentimiento (trazabilidad)';
+COMMENT ON COLUMN "user".consent_ip IS 'GDPR: IP desde donde se otorgó el consentimiento';
+COMMENT ON COLUMN "user".consent_version IS 'GDPR: Versión de los Términos y Condiciones aceptada';
+COMMENT ON COLUMN "user".scheduled_deletion IS 'GDPR: Fecha programada para hard delete (30 días tras soft delete)';
+*/
 COMMENT ON COLUMN "user".reset_token_expiry IS 'Fecha/hora de expiración del token de recuperación (1 hora)';
 COMMENT ON COLUMN "user".last_project_creation IS 'Timestamp del último proyecto creado (para rate limiting)';
 */

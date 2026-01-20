@@ -1,0 +1,240 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Encabezado -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-body bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h1 class="display-4 mb-3">🔒 Política de Privacidad y Protección de Datos</h1>
+                    <p class="lead mb-0">PreIncubadora AI - Cumplimiento GDPR/LPD</p>
+                    <p class="small mb-0">Versión 1.0 - Última actualización: Enero 2026</p>
+                </div>
+            </div>
+
+            <!-- Sección 1: Información General -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">📋 1. Información General</h2>
+                </div>
+                <div class="card-body">
+                    <p><strong>PreIncubadora AI</strong> es un sistema self-hosted de análisis de viabilidad de ideas de negocio que utiliza inteligencia artificial.</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>💡 Responsable de Tratamiento:</strong> El propietario de esta instancia self-hosted es el único responsable del tratamiento de datos personales bajo el modelo de <strong>Responsabilidad Única</strong>.
+                    </div>
+
+                    <h5 class="mt-4">Datos que Recolectamos:</h5>
+                    <ul>
+                        <li><strong>Datos de Registro:</strong> Email, RUT (identificador único chileno), contraseña hasheada</li>
+                        <li><strong>Datos de Proyecto:</strong> Ideas de negocio y análisis generados</li>
+                        <li><strong>Datos de Auditoría:</strong> IP, timestamp, acciones realizadas</li>
+                        <li><strong>Consentimiento:</strong> Fecha/hora, IP y versión de términos aceptados</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sección 2: Uso de Datos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">🎯 2. Finalidad y Uso de Datos</h2>
+                </div>
+                <div class="card-body">
+                    <h5>Tus datos se utilizan EXCLUSIVAMENTE para:</h5>
+                    <ol>
+                        <li><strong>Generación de Reportes de Viabilidad:</strong> Procesamos tu idea de negocio mediante API de Google Gemini para generar análisis bajo los 9 Pilares de Viabilidad</li>
+                        <li><strong>Contacto Comercial:</strong> Podemos contactarte con fines de consultoría empresarial relacionada con tu proyecto</li>
+                        <li><strong>Auditoría y Seguridad:</strong> Registramos acciones para cumplimiento normativo y prevención de abuso</li>
+                    </ol>
+
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Procesamiento Externo - Google Gemini AI:</strong><br>
+                        Tu idea de negocio se procesa mediante la API de Google Gemini (generative AI). Según la política de Google:
+                        <ul class="mb-0 mt-2">
+                            <li>Los datos enviados a través de la API <strong>NO</strong> se utilizan para entrenar modelos públicos de IA</li>
+                            <li>Google actúa como <strong>procesador de datos</strong>, no como controlador</li>
+                            <li>Los datos se transmiten cifrados (TLS 1.2/1.3)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 3: Seguridad -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">🛡️ 3. Medidas de Seguridad Implementadas</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Encriptación:</h5>
+                            <ul>
+                                <li>✅ HTTPS obligatorio (TLS 1.2/1.3)</li>
+                                <li>✅ Passwords hasheadas con Bcrypt (work factor 12)</li>
+                                <li>✅ Transmisión cifrada a APIs externas</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Control de Acceso:</h5>
+                            <ul>
+                                <li>✅ Rate limiting (60 req/min)</li>
+                                <li>✅ Protección anti-Prompt Injection</li>
+                                <li>✅ Límite de 10 mensajes por sesión</li>
+                                <li>✅ Auditoría completa de acciones</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success mt-3">
+                        <strong>🔒 Base de Datos Aislada:</strong> PostgreSQL configurado para NO aceptar conexiones externas (bind 127.0.0.1 o red interna Docker).
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 4: Derechos GDPR/LPD -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">⚖️ 4. Tus Derechos (GDPR/LPD)</h2>
+                </div>
+                <div class="card-body">
+                    <p>Como titular de datos personales, tienes derecho a:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="border p-3 rounded h-100">
+                                <h5 class="text-primary">📂 Acceso</h5>
+                                <p class="small mb-0">Solicitar copia de todos tus datos almacenados</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border p-3 rounded h-100">
+                                <h5 class="text-primary">✏️ Rectificación</h5>
+                                <p class="small mb-0">Corregir datos inexactos o incompletos</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border p-3 rounded h-100">
+                                <h5 class="text-danger">🗑️ Eliminación (Derecho al Olvido)</h5>
+                                <p class="small mb-0">Solicitar eliminación permanente de tu cuenta y datos</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border p-3 rounded h-100">
+                                <h5 class="text-warning">⏸️ Limitación</h5>
+                                <p class="small mb-0">Restringir el procesamiento de tus datos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger mt-3">
+                        <h5 class="alert-heading">🗑️ Derecho al Olvido - Proceso de Eliminación:</h5>
+                        <ol class="mb-0">
+                            <li><strong>Soft Delete Inmediato:</strong> Al solicitar eliminación, tu cuenta se desactiva inmediatamente</li>
+                            <li><strong>Hard Delete (30 días):</strong> Tras 30 días, se ejecuta el borrado físico permanente de:
+                                <ul>
+                                    <li>Registro de usuario (email, RUT, contraseña)</li>
+                                    <li>Todos los proyectos y análisis generados</li>
+                                    <li>Historial de chat y sesiones</li>
+                                    <li>Logs de auditoría asociados</li>
+                                </ul>
+                            </li>
+                            <li><strong>Recuperación:</strong> Tienes 30 días para cancelar la eliminación y reactivar tu cuenta</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 5: Consentimiento -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">✅ 5. Consentimiento Informado</h2>
+                </div>
+                <div class="card-body">
+                    <p>Al registrarte en PreIncubadora AI, se te solicitará consentimiento explícito mediante checkbox <strong>NO pre-marcado</strong> con el siguiente texto:</p>
+                    
+                    <div class="border-start border-primary border-5 bg-light p-4 my-3">
+                        <p class="mb-0"><em>"Autorizo el uso de mis datos para la generación del reporte de viabilidad y para ser contactado con fines de consultoría comercial. Acepto que mi idea de negocio será procesada mediante la API de Google Gemini bajo las condiciones descritas en la Política de Privacidad."</em></p>
+                    </div>
+
+                    <p><strong>Trazabilidad:</strong> El sistema registra:</p>
+                    <ul>
+                        <li>📅 Fecha y hora exacta del consentimiento (UTC)</li>
+                        <li>🌐 Dirección IP desde donde se otorgó</li>
+                        <li>📄 Versión de los Términos y Condiciones aceptada</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sección 6: Retención de Datos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">⏰ 6. Retención de Datos</h2>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo de Dato</th>
+                                <th>Período de Retención</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cuenta activa</td>
+                                <td>Mientras la cuenta esté activa</td>
+                            </tr>
+                            <tr>
+                                <td>Proyectos y análisis</td>
+                                <td>Hasta eliminación de cuenta</td>
+                            </tr>
+                            <tr>
+                                <td>Logs de auditoría</td>
+                                <td>365 días (por requisitos legales)</td>
+                            </tr>
+                            <tr>
+                                <td>Cuenta desactivada (soft delete)</td>
+                                <td>30 días antes de hard delete</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sección 7: Contacto -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h2 class="h4 mb-0">📧 7. Contacto y Ejercicio de Derechos</h2>
+                </div>
+                <div class="card-body">
+                    <p>Para ejercer cualquiera de tus derechos o realizar consultas sobre privacidad:</p>
+                    
+                    <div class="alert alert-primary">
+                        <strong>Responsable de Datos:</strong> Propietario de esta instancia Self-Hosted<br>
+                        <strong>Email:</strong> [Configurar según instalación]<br>
+                        <strong>Tiempo de Respuesta:</strong> 30 días hábiles máximo
+                    </div>
+
+                    <p class="mb-0"><strong>Nota:</strong> Esta política puede actualizarse periódicamente. La versión vigente siempre estará disponible en <code>/privacy</code>.</p>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="text-center mt-4 mb-5">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-arrow-left"></i> Volver al Dashboard
+                </a>
+                {% else %}
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-2">
+                    <i class="bi bi-house"></i> Inicio
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-person-plus"></i> Crear Cuenta
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

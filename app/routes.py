@@ -28,15 +28,20 @@ def index():
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
-    """Registro de usuario con validación de RUT único"""
+    """Registro de usuario con validación de RUT único y consentimiento GDPR"""
     if request.method == "POST":
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         rut = request.form.get("rut", "").strip()
+        consent = request.form.get("consent", "") == "on"  # Checkbox de consentimiento
         
         # Validaciones
         if not email or not password or not rut:
             flash("Todos los campos son requeridos", "error")
+            return redirect(url_for("auth.register"))
+        
+        if not consent:
+            flash("Debes aceptar la Política de Privacidad y autorizar el uso de tus datos", "error")
             return redirect(url_for("auth.register"))
         
         if len(password) < 8:
@@ -58,6 +63,12 @@ def register():
         user = User(email=email, rut=rut)
         user.set_password(password)
         
+        # Registrar consentimiento GDPR con trazabilidad
+        user.record_consent(
+            ip_address=request.remote_addr,
+            terms_version="1.0"
+        )
+        
         try:
             db.session.add(user)
             db.session.commit()
@@ -68,9 +79,13 @@ def register():
                 action="user_registration",
                 resource_type="user",
                 resource_id=user.id,
-                consent_given=True,
                 ip_address=request.remote_addr,
-                user_agent=request.headers.get("User-Agent", "")
+                user_agent=request.headers.get("User-Agent", ""),
+                details={
+                    "consent_given": True,
+                    "consent_version": "1.0",
+                    "consent_ip": request.remote_addr
+                }
             )
             db.session.add(audit)
             db.session.commit()
@@ -515,3 +530,76 @@ def not_found(error):
 @auth_bp.errorhandler(500)
 def server_error(error):
     return render_template("errors/500.html"), 500
+
+
+# ==================== PRIVACIDAD Y GDPR ====================
+
+@auth_bp.route("/privacy")
+def privacy():
+    """Página de política de privacidad (pública, sin autenticación)"""
+    return render_template("privacy.html")
+
+
+@dashboard_bp.route("/delete-account", methods=["GET", "POST"])
+@login_required
+def delete_account():
+    """Eliminación de cuenta con confirmación (soft delete → hard delete en 30 días)"""
+    if request.method == "POST":
+        password_confirmation = request.form.get("password", "")
+        
+        # Verificar contraseña como medida de seguridad
+        if not current_user.check_password(password_confirmation):
+            flash("Contraseña incorrecta. No se pudo eliminar la cuenta.", "error")
+            return redirect(url_for("dashboard.delete_account"))
+        
+        # Auditoría
+        audit = AuditLog(
+            user_id=current_user.id,
+            action="account_deletion_requested",
+            resource_type="user",
+            resource_id=current_user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            details={"scheduled_deletion": True, "days_until_hard_delete": 30}
+        )
+        db.session.add(audit)
+        
+        # Soft delete inmediato
+        current_user.schedule_deletion(days=30)
+        
+        # Cerrar sesión
+        logout_user()
+        
+        flash(
+            "Tu cuenta ha sido desactivada. Se eliminará permanentemente en 30 días. "
+            "Si cambias de opinión, puedes iniciar sesión antes de esa fecha para cancelar la eliminación.",
+            "warning"
+        )
+        return redirect(url_for("auth.index"))
+    
+    return render_template("dashboard/delete_account.html")
+
+
+@auth_bp.route("/cancel-deletion", methods=["POST"])
+@login_required
+def cancel_deletion():
+    """Cancelar eliminación programada (reactivar cuenta)"""
+    if current_user.scheduled_deletion:
+        current_user.cancel_deletion()
+        
+        # Auditoría
+        audit = AuditLog(
+            user_id=current_user.id,
+            action="account_deletion_cancelled",
+            resource_type="user",
+            resource_id=current_user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent")
+        )
+        db.session.add(audit)
+        db.session.commit()
+        
+        flash("Tu cuenta ha sido reactivada exitosamente. ¡Bienvenido de vuelta!", "success")
+    
+    return redirect(url_for("dashboard.dashboard"))
+
