@@ -9,8 +9,21 @@ logger = logging.getLogger(__name__)
 class IncubatorAI:
     """
     Servicio de IA para evaluación de ideas de negocio.
-    Integración con Gemma 3 12B bajo enfoque de "Realismo Constructivo".
+    Sistema de fallback automático entre modelos (mejor → peor calidad).
+    Cambia automáticamente cuando se excede cuota gratuita.
     """
+    
+    # Modelos priorizados para análisis de texto (mejor → peor)
+    MODEL_PRIORITY = [
+        "gemini-2.5-flash",      # ⭐⭐⭐⭐⭐ RPM: 5, TPM: 250K
+        "gemini-3-flash",         # ⭐⭐⭐⭐⭐ RPM: 5, TPM: 250K
+        "gemini-2.5-flash-lite",  # ⭐⭐⭐⭐ RPM: 10, TPM: 250K
+        "gemma-3-27b-it",         # ⭐⭐⭐⭐ RPM: 30, TPM: 15K (mejor Gemma)
+        "gemma-3-12b-it",         # ⭐⭐⭐ RPM: 30, TPM: 15K (actual)
+        "gemma-3-4b-it",          # ⭐⭐ RPM: 30, TPM: 15K
+        "gemma-3-2b-it",          # ⭐ RPM: 30, TPM: 15K
+        "gemma-3-1b-it",          # ⭐ RPM: 30, TPM: 15K (último recurso)
+    ]
     
     # Los 9 Pilares de Viabilidad
     PILLARS = [
@@ -43,11 +56,53 @@ ESCALA DE VIABILIDAD:
 """
     
     def __init__(self, api_key: str):
-        """Inicializar cliente de Gemini"""
+        """Inicializar cliente de Gemini con sistema de fallback"""
         genai.configure(api_key=api_key)
-        # Usar gemma-3-12b-it (mejor cuota gratuita, buena calidad)
-        self.model = genai.GenerativeModel("gemma-3-12b-it")
-        logger.info("✅ Gemma 3 12B inicializado correctamente")
+        self.api_key = api_key
+        self.current_model_index = 0
+        self.model = self._initialize_model()
+        logger.info(f"✅ Modelo inicializado: {self.MODEL_PRIORITY[self.current_model_index]}")
+    
+    def _initialize_model(self):
+        """Inicializar modelo actual basado en el índice de prioridad"""
+        model_name = self.MODEL_PRIORITY[self.current_model_index]
+        return genai.GenerativeModel(model_name)
+    
+    def _try_next_model(self):
+        """Cambiar al siguiente modelo en la lista de prioridad"""
+        if self.current_model_index < len(self.MODEL_PRIORITY) - 1:
+            self.current_model_index += 1
+            self.model = self._initialize_model()
+            logger.warning(f"⚠️ Cambiando a modelo: {self.MODEL_PRIORITY[self.current_model_index]}")
+            return True
+        else:
+            logger.error("❌ Todos los modelos han excedido su cuota")
+            return False
+    
+    def _generate_with_fallback(self, prompt: str, max_retries: int = 3) -> str:
+        """
+        Generar contenido con fallback automático si se excede cuota.
+        Intenta con el modelo actual, si falla por cuota (429), prueba el siguiente.
+        """
+        attempts = 0
+        while attemp_text = self._generate_with_fallback(prompt)
+            data = json.loads(response_
+                response = self.model.generate_content(prompt)
+                return response.text
+            except Exception as e:
+                error_str = str(e)
+                # Error 429 = Cuota excedida
+                if "429" in error_str or "quota" in error_str.lower():
+                    logger.warning(f"⚠️ Cuota excedida para {self.MODEL_PRIORITY[self.current_model_index]}")
+                    if not self._try_next_model():
+                        raise Exception("Todos los modelos disponibles han excedido su cuota gratuita")
+                    attempts += 1
+                else:
+                    # Otro tipo de error, no reintentar
+                    logger.error(f"❌ Error al generar contenido: {e}")
+                    raise e
+        
+        raise Exception(f"Falló después de {max_retries} intentos con diferentes modelos")
     
     def evaluate_ambiguity(self, raw_idea: str) -> Tuple[float, bool]:
         """
@@ -72,8 +127,8 @@ Donde:
 - Considera variables como: falta de target market específico, modelo de ingresos ambiguo, etc.
 """
         try:
-            response = self.model.generate_content(prompt)
-            data = json.loads(response.text)
+            response_text = self._generate_with_fallback(prompt)
+            data = json.loads(response_text)
             return float(data.get("variability_score", 50)), data.get("requires_clarification", True)
         except Exception as e:
             logger.error(f"Error evaluating ambiguity: {e}")
@@ -99,8 +154,8 @@ Responde SOLO en JSON:
 }}
 """
         try:
-            response = self.model.generate_content(prompt)
-            data = json.loads(response.text)
+            response_text = self._generate_with_fallback(prompt)
+            data = json.loads(response_text)
             return data.get("questions", [])
         except Exception as e:
             logger.error(f"Error generating clarification questions: {e}")
@@ -153,8 +208,7 @@ INSTRUCCIONES CRÍTICAS:
 4. La puntuación debe reflejar viabilidad REALISTA, no optimista.
 """
         try:
-            response = self.model.generate_content(prompt)
-            text = response.text
+            text = self._generate_with_fallback(prompt)
             
             # Limpiar respuesta de posibles marcas de markdown
             if text.startswith("```json"):
@@ -233,8 +287,7 @@ Responde en JSON:
 }}
 """
         try:
-            response = self.model.generate_content(prompt)
-            text = response.text
+            text = self._generate_with_fallback(prompt)
             
             if text.startswith("```json"):
                 text = text[7:]
