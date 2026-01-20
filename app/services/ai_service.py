@@ -80,7 +80,7 @@ ESCALA DE VIABILIDAD:
         self.api_key = api_key
         self.current_model_index = 0
         self.model = self._initialize_model()
-        logger.info(f"✅ Modelo inicializado: {self.MODEL_PRIORITY[self.current_model_index]}")
+        logger.info(f"[OK] Modelo inicializado: {self.MODEL_PRIORITY[self.current_model_index]}")
     
     @staticmethod
     def sanitize_input(user_input: str) -> str:
@@ -114,7 +114,7 @@ ESCALA DE VIABILIDAD:
         # Limitar longitud (protección adicional contra ataques de contexto)
         max_length = 5000
         if len(user_input) > max_length:
-            logger.warning(f"⚠️ Input excede longitud máxima: {len(user_input)} caracteres")
+            logger.warning(f"[WARNING] Input excede longitud máxima: {len(user_input)} caracteres")
             user_input = user_input[:max_length]
         
         # Remover caracteres de control (excepto saltos de línea y tabs)
@@ -132,10 +132,10 @@ ESCALA DE VIABILIDAD:
         if self.current_model_index < len(self.MODEL_PRIORITY) - 1:
             self.current_model_index += 1
             self.model = self._initialize_model()
-            logger.warning(f"⚠️ Cambiando a modelo: {self.MODEL_PRIORITY[self.current_model_index]}")
+                logger.warning(f"[FALLBACK] Cambiando a modelo: {self.MODEL_PRIORITY[self.current_model_index]}")
             return True
         else:
-            logger.error("❌ Todos los modelos han excedido su cuota")
+                logger.error("[ERROR] Todos los modelos han excedido su cuota")
             return False
     
     def _generate_with_fallback(self, prompt: str, max_retries: int = 3) -> str:
@@ -152,13 +152,13 @@ ESCALA DE VIABILIDAD:
                 error_str = str(e)
                 # Error 429 = Cuota excedida
                 if "429" in error_str or "quota" in error_str.lower():
-                    logger.warning(f"⚠️ Cuota excedida para {self.MODEL_PRIORITY[self.current_model_index]}")
+                    logger.warning(f"[QUOTA] Cuota excedida para {self.MODEL_PRIORITY[self.current_model_index]}")
                     if not self._try_next_model():
                         raise Exception("Todos los modelos disponibles han excedido su cuota gratuita")
                     attempts += 1
                 else:
                     # Otro tipo de error, no reintentar
-                    logger.error(f"❌ Error al generar contenido: {e}")
+                    logger.error(f"[ERROR] Error al generar contenido: {e}")
                     raise e
         
         raise Exception(f"Falló después de {max_retries} intentos con diferentes modelos")

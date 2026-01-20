@@ -15,6 +15,13 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     rut = db.Column(db.String(12), unique=True, nullable=False, index=True)
+    
+    # Datos Personales
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    
     role = db.Column(db.Enum("user", "admin", "seller", name="user_role"), default="user")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_project_creation = db.Column(db.DateTime)

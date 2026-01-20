@@ -33,10 +33,14 @@ def register():
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         rut = request.form.get("rut", "").strip()
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
+        age = request.form.get("age", "").strip()
+        city = request.form.get("city", "").strip()
         consent = request.form.get("consent", "") == "on"  # Checkbox de consentimiento
         
         # Validaciones
-        if not email or not password or not rut:
+        if not email or not password or not rut or not first_name or not last_name or not age or not city:
             flash("Todos los campos son requeridos", "error")
             return redirect(url_for("auth.register"))
         
@@ -46,6 +50,16 @@ def register():
         
         if len(password) < 8:
             flash("La contraseña debe tener al menos 8 caracteres", "error")
+            return redirect(url_for("auth.register"))
+        
+        # Validar edad
+        try:
+            age_int = int(age)
+            if age_int < 18 or age_int > 120:
+                flash("Debes tener entre 18 y 120 años", "error")
+                return redirect(url_for("auth.register"))
+        except ValueError:
+            flash("La edad debe ser un número válido", "error")
             return redirect(url_for("auth.register"))
         
         # Verificar RUT único
@@ -60,7 +74,14 @@ def register():
             return redirect(url_for("auth.register"))
         
         # Crear usuario
-        user = User(email=email, rut=rut)
+        user = User(
+            email=email,
+            rut=rut,
+            first_name=first_name,
+            last_name=last_name,
+            age=age_int,
+            city=city
+        )
         user.set_password(password)
         
         # Registrar consentimiento GDPR con trazabilidad
@@ -81,11 +102,7 @@ def register():
                 resource_id=user.id,
                 ip_address=request.remote_addr,
                 user_agent=request.headers.get("User-Agent", ""),
-                details={
-                    "consent_given": True,
-                    "consent_version": "1.0",
-                    "consent_ip": request.remote_addr
-                }
+                consent_given=True
             )
             db.session.add(audit)
             db.session.commit()
@@ -560,7 +577,7 @@ def delete_account():
             resource_id=current_user.id,
             ip_address=request.remote_addr,
             user_agent=request.headers.get("User-Agent"),
-            details={"scheduled_deletion": True, "days_until_hard_delete": 30}
+            consent_given=False
         )
         db.session.add(audit)
         
