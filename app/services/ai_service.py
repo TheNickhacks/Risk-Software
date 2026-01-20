@@ -105,7 +105,7 @@ ESCALA DE VIABILIDAD:
         # Detectar patrones maliciosos
         for pattern in IncubatorAI.INJECTION_PATTERNS:
             if re.search(pattern, normalized, re.IGNORECASE):
-                logger.warning(f"🚨 Intento de Prompt Injection detectado: {pattern}")
+                logger.warning(f"[ALERT] Intento de Prompt Injection detectado: {pattern}")
                 raise ValueError(
                     "Input no válido: Se detectó contenido potencialmente malicioso. "
                     "Por favor, describe tu idea de negocio sin incluir instrucciones al sistema."
@@ -132,10 +132,10 @@ ESCALA DE VIABILIDAD:
         if self.current_model_index < len(self.MODEL_PRIORITY) - 1:
             self.current_model_index += 1
             self.model = self._initialize_model()
-                logger.warning(f"[FALLBACK] Cambiando a modelo: {self.MODEL_PRIORITY[self.current_model_index]}")
+            logger.warning(f"[FALLBACK] Cambiando a modelo: {self.MODEL_PRIORITY[self.current_model_index]}")
             return True
         else:
-                logger.error("[ERROR] Todos los modelos han excedido su cuota")
+            logger.error("[ERROR] Todos los modelos han excedido su cuota")
             return False
     
     def _generate_with_fallback(self, prompt: str, max_retries: int = 3) -> str:
