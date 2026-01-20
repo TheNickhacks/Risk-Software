@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class IncubatorAI:
     """
     Servicio de IA para evaluación de ideas de negocio.
-    Integración con Gemini 2.5 Flash bajo enfoque de "Realismo Constructivo".
+    Integración con Gemma 3 12B bajo enfoque de "Realismo Constructivo".
     """
     
     # Los 9 Pilares de Viabilidad
@@ -45,9 +45,9 @@ ESCALA DE VIABILIDAD:
     def __init__(self, api_key: str):
         """Inicializar cliente de Gemini"""
         genai.configure(api_key=api_key)
-        # Usar gemini-2.5-flash (modelo más reciente y disponible)
-        self.model = genai.GenerativeModel("gemini-2.5-flash")
-        logger.info("✅ Gemini 2.5 Flash inicializado correctamente")
+        # Usar gemma-3-12b-it (mejor cuota gratuita, buena calidad)
+        self.model = genai.GenerativeModel("gemma-3-12b-it")
+        logger.info("✅ Gemma 3 12B inicializado correctamente")
     
     def evaluate_ambiguity(self, raw_idea: str) -> Tuple[float, bool]:
         """

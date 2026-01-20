@@ -41,10 +41,10 @@ def test_gemini_api():
         print(f"❌ ERROR al configurar API: {e}")
         sys.exit(1)
     
-    # 4. Crear modelo gemini-2.5-flash
+    # 4. Crear modelo gemma-3-12b-it
     try:
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        print("✅ Modelo gemini-2.5-flash inicializado")
+        model = genai.GenerativeModel("gemma-3-12b-it")
+        print("✅ Modelo gemma-3-12b-it inicializado")
     except Exception as e:
         print(f"❌ ERROR al inicializar modelo: {e}")
         sys.exit(1)
@@ -62,7 +62,7 @@ def test_gemini_api():
     print("\n" + "=" * 60)
     print("✅ TODO OK - GEMINI API ESTÁ FUNCIONANDO")
     print("=" * 60)
-    print("\nUsando: gemini-2.5-flash")
+    print("\nUsando: gemma-3-12b-it")
     print("Status: Listo para producción\n")
 
 if __name__ == "__main__":
