@@ -267,7 +267,7 @@ ESCALA DE VIABILIDAD:
         # Sanitizar input del usuario
         raw_idea = self.sanitize_input(raw_idea)
         
-                prompt = f"""Analiza el siguiente pitch de negocio e indica su grado de ambigüedad.
+        prompt = f"""Analiza el siguiente pitch de negocio e indica su grado de ambigüedad.
 
 PITCH: "{raw_idea}"
 
@@ -283,8 +283,8 @@ Donde:
 - Considera variables como: falta de target market específico, modelo de ingresos ambiguo, etc.
 """
         try:
-                        response_text = self._generate_with_fallback(prompt)
-                        data = self._extract_json_payload(response_text)
+            response_text = self._generate_with_fallback(prompt)
+            data = self._extract_json_payload(response_text)
             return float(data.get("variability_score", 50)), data.get("requires_clarification", True)
         except Exception as e:
             logger.error(f"Error evaluating ambiguity: {e}")
