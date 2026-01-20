@@ -244,9 +244,10 @@ Donde:
 "{raw_idea}"
 
 Genera exactamente {num_questions} preguntas clave para CLARIFICAR y VALIDAR la idea.
-Las preguntas deben ser:
+Requisitos de las preguntas:
+- Muy concisas (máximo 20 palabras)
 - Específicas y sin ambigüedad
-- Enfocadas en los puntos débiles o vagos
+- Enfocadas en puntos vagos o críticos
 - Orientadas a obtener información cuantificable
 
 Responde SOLO en JSON VÁLIDO (sin markdown, sin texto adicional):
@@ -269,6 +270,41 @@ Responde SOLO en JSON VÁLIDO (sin markdown, sin texto adicional):
                 "¿Cómo será el modelo de ingresos? (suscripción, transaccional, otro)",
                 "¿Cuáles son los competidores directos y tu ventaja diferencial?"
             ]
+
+    def generate_clarification_reply(self, raw_idea: str, conversation_context: str) -> str:
+        """
+        Genera la siguiente intervención del asistente en la sesión de clarificación.
+        Debe revisar el historial y:
+        - Si faltan datos, formular UNA pregunta breve y concreta (<= 20 palabras)
+        - Si hay datos suficientes, hacer un breve resumen (2-3 frases) y pedir siguiente dato crítico
+        """
+        raw_idea = self.sanitize_input(raw_idea)
+        context = conversation_context or ""
+
+        prompt = f"""
+{self.SYSTEM_PROMPT}
+
+CONTEXTO DE CONVERSACIÓN (historial):
+{context}
+
+IDEA ORIGINAL:
+"{raw_idea}"
+
+TAREA:
+- Responde en español.
+- Si faltan datos: devuelve SOLO una pregunta clara, específica y corta (<= 20 palabras).
+- Si hay suficiente contexto: devuelve un mini-resumen (2-3 frases) y solicita el próximo dato crítico.
+- No uses formato markdown, viñetas ni código. Respuesta directa.
+"""
+        try:
+            text = self._generate_with_fallback(prompt)
+            # Quitar cercos de código si el modelo los añade
+            if text.startswith("```"):
+                text = text.strip().strip("`")
+            return text.strip()
+        except Exception as e:
+            logger.error(f"Error generating clarification reply: {e}")
+            return "Gracias. ¿Cuál es tu mercado objetivo específico y el volumen estimado?"
     
     def generate_business_plan(self, raw_idea: str, clarifications: str = None) -> Dict:
         """

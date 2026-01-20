@@ -478,7 +478,10 @@ def send_message():
         
         # Generar respuesta según tipo de sesión
         if session.session_type == "clarification":
-            ai_response = f"Gracias por tu respuesta. Continuaremos con el análisis."
+            ai_response = ai.generate_clarification_reply(
+                project.raw_idea,
+                conversation_context
+            )
         else:
             # Análisis completo
             plan = ai.generate_business_plan(
