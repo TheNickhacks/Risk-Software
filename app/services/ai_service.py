@@ -1,10 +1,30 @@
-import google.generativeai as genai
+# Preferir la nueva librería oficial google.genai; fallback a google.generativeai si no está disponible
+try:
+    from google import genai as google_genai
+    _USE_GOOGLE_GENAI = True
+except Exception:
+    import google.generativeai as google_generativeai
+    _USE_GOOGLE_GENAI = False
 from typing import Dict, List, Tuple
 import json
 import logging
 import re
 
 logger = logging.getLogger(__name__)
+
+
+class _GenaiModelWrapper:
+    """Wrapper para unificar interfaz generate_content entre google.genai y generativeai."""
+    def __init__(self, client, model_name: str):
+        self._client = client
+        self._model_name = model_name
+
+    def generate_content(self, prompt: str):
+        # API de google.genai: client.models.generate_content(model=..., contents=[...])
+        return self._client.models.generate_content(
+            model=self._model_name,
+            contents=[{"role": "user", "parts": [{"text": prompt}]}]
+        )
 
 
 class IncubatorAI:
@@ -104,9 +124,17 @@ ESCALA DE VIABILIDAD:
     
     def __init__(self, api_key: str):
         """Inicializar cliente de Gemini con sistema de fallback"""
-        genai.configure(api_key=api_key)
         self.api_key = api_key
         self.current_model_index = 0
+
+        if _USE_GOOGLE_GENAI:
+            # Nueva librería oficial
+            self._client = google_genai.Client(api_key=api_key)
+        else:
+            # Librería deprecada, usada como fallback
+            google_generativeai.configure(api_key=api_key)
+            self._client = None
+
         self.model = self._initialize_model()
         logger.info(f"[OK] Modelo inicializado: {self.MODEL_PRIORITY[self.current_model_index]}")
     
@@ -153,7 +181,10 @@ ESCALA DE VIABILIDAD:
     def _initialize_model(self):
         """Inicializar modelo actual basado en el índice de prioridad"""
         model_name = self.MODEL_PRIORITY[self.current_model_index]
-        return genai.GenerativeModel(model_name)
+        if _USE_GOOGLE_GENAI:
+            return _GenaiModelWrapper(self._client, model_name)
+        else:
+            return google_generativeai.GenerativeModel(model_name)
 
     @staticmethod
     def _extract_json_payload(text: str):
