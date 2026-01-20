@@ -101,15 +101,11 @@ class IncubatorAI:
 
 ## 🧪 **Testing**
 
-Para probar el sistema, ejecuta:
-```bash
-python test_fallback_system.py
-```
-
-O desde la aplicación Flask:
+Para probar el sistema desde la aplicación Flask:
 - Crea un proyecto
 - Analiza una idea
 - El sistema usa automáticamente el mejor modelo disponible
+- Monitorea los logs para ver cambios de modelo
 
 ---
 
