@@ -50,48 +50,43 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto flex flex-col h-full">
+<div class="w-full flex flex-col h-full px-2 md:px-4 lg:px-6">
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center space-x-4">
-            <a href="/project/{{ project.id }}" class="text-slate-400 hover:text-white transition-colors duration-200">
+            <a href="/project/{{ project.id }}" class="text-[#E4F3F8] hover:text-[#FFC300] transition-colors duration-200">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
             </a>
             <div>
-                <h1 class="text-xl md:text-2xl font-bold text-white">Clarificación</h1>
-                <p class="text-slate-400 text-sm mt-1">{{ project.title }}</p>
+                <h1 class="text-xl md:text-2xl font-bold text-[#E4F3F8]">Clarificación</h1>
+                <p class="text-sm mt-1 text-[#a8c5d8]">{{ project.title }}</p>
             </div>
         </div>
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50">
-            <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-            <span class="text-xs text-slate-400">Chat Activo</span>
+        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#003d5a] border border-[#00A2DF]">
+            <div class="w-2 h-2 bg-palette-amber rounded-full animate-pulse"></div>
+            <span class="text-xs text-[#E4F3F8]">Chat Activo</span>
         </div>
     </div>
     
     <!-- Chat Container -->
-    <div class="chat-container overflow-y-auto mb-6 space-y-4 pr-2 scrollbar-thin">
+    <div id="chatContainer" class="chat-container overflow-y-auto mb-6 space-y-4 pr-2 scrollbar-thin">
         {% for message in messages %}
         <div class="flex {% if message.role == 'user' %}justify-end{% else %}justify-start{% endif %}">
             <div class="message-bubble {% if message.role == 'user' %}order-2{% else %}order-1{% endif %}">
                 {% if message.role != 'user' %}
                 <div class="flex items-center space-x-2 mb-2">
-                    <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
-                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-6 h-6 bg-palette-amber rounded-lg flex items-center justify-center shadow-glow-sm">
+                        <svg class="w-3 h-3 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
-                    <span class="text-xs font-medium text-slate-400">PreIncubadora AI</span>
+                    <span class="text-xs font-medium text-slate-700">PreIncubadora AI</span>
                 </div>
                 {% endif %}
-                <div class="p-4 rounded-2xl
-                    {% if message.role == 'user' %}
-                        bg-gradient-to-br from-blue-600 to-blue-700 rounded-br-md
-                    {% else %}
-                        card-static rounded-bl-md
-                    {% endif %}">
-                    <p class="text-sm {% if message.role == 'user' %}text-white{% else %}text-slate-300{% endif %} whitespace-pre-wrap leading-relaxed">
+                <div class="p-4 rounded-2xl {% if message.role == 'user' %}bubble-user rounded-br-md{% else %}bubble-ai rounded-bl-md{% endif %}">
+                    <p class="text-sm whitespace-pre-wrap leading-relaxed {% if message.role == 'user' %}text-white{% else %}text-[#E4F3F8]{% endif %}">
                         {{ message.content }}
                     </p>
                 </div>
@@ -131,16 +126,17 @@
             
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                    <div class="h-1.5 w-24 bg-slate-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300" 
+                    <div class="h-1.5 w-24 bg-[#003d5a] rounded-full overflow-hidden">
+                        <div id="progressFill" class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300" 
                              style="width: {{ (session.message_count / config.MAX_CHAT_MESSAGES * 100)|int }}%"></div>
                     </div>
-                    <span class="text-xs text-slate-500">
+                    <span id="messageCounter" class="text-xs text-[#a8c5d8]">
                         {{ session.message_count }}/{{ config.MAX_CHAT_MESSAGES }} mensajes
                     </span>
                 </div>
                 <button
                     type="submit"
+                    id="submitBtn"
                     class="btn-primary text-white font-medium py-2.5 px-6 rounded-xl inline-flex items-center space-x-2 text-sm"
                 >
                     <span>Enviar</span>
@@ -172,65 +168,166 @@
 </div>
 
 <script>
-document.getElementById('messageForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const messageInput = document.getElementById('messageInput');
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const message = messageInput.value.trim();
-    
-    if (!message) return;
-    
-    // Disable form while sending
-    messageInput.disabled = true;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `
-        <span>Enviando...</span>
-        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+const form = document.getElementById('messageForm');
+const messageInput = document.getElementById('messageInput');
+const submitBtn = document.getElementById('submitBtn');
+const chatContainer = document.getElementById('chatContainer');
+const progressFill = document.getElementById('progressFill');
+const messageCounter = document.getElementById('messageCounter');
+const maxMessages = {{ config.MAX_CHAT_MESSAGES }};
+
+const formatTime = (date) => {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const createBubble = (role, content, timeLabel) => {
+    const isUser = role === 'user';
+    const wrapper = document.createElement('div');
+    wrapper.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble ${isUser ? 'order-2' : 'order-1'}`;
+
+    if (!isUser) {
+        const header = document.createElement('div');
+        header.className = 'flex items-center space-x-2 mb-2';
+        header.innerHTML = `
+            <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <span class="text-xs font-medium text-[#E4F3F8]">PreIncubadora AI</span>
+        `;
+        bubble.appendChild(header);
+    }
+
+    const body = document.createElement('div');
+    body.className = `p-4 rounded-2xl ${isUser ? 'bg-gradient-to-br from-blue-600 to-blue-700 rounded-br-md' : 'card-static rounded-bl-md'}`;
+    const text = document.createElement('p');
+    text.className = `text-sm ${isUser ? 'text-white' : 'text-[#E4F3F8]'} whitespace-pre-wrap leading-relaxed`;
+    text.textContent = content;
+    body.appendChild(text);
+    bubble.appendChild(body);
+
+    const time = document.createElement('p');
+    time.className = `text-xs text-slate-500 mt-2 ${isUser ? 'text-right' : ''}`;
+    time.textContent = timeLabel;
+    bubble.appendChild(time);
+
+    wrapper.appendChild(bubble);
+    return wrapper;
+};
+
+const createTyping = () => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex justify-start typing-holder';
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble order-1';
+    bubble.innerHTML = `
+        <div class="flex items-center space-x-2 mb-2">
+            <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <span class="text-xs font-medium text-slate-400">PreIncubadora AI</span>
+        </div>
+        <div class="p-4 rounded-2xl card-static rounded-bl-md typing-indicator">
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
     `;
-    
+    wrapper.appendChild(bubble);
+    return wrapper;
+};
+
+const scrollToBottom = () => {
+    if (chatContainer) {
+        chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+    }
+};
+
+const setFormState = (enabled) => {
+    messageInput.disabled = !enabled;
+    submitBtn.disabled = !enabled;
+    submitBtn.innerHTML = enabled
+        ? `<span>Enviar</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
+        : `<span>Enviando...</span><svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+};
+
+const updateCounters = (count) => {
+    if (progressFill) progressFill.style.width = `${Math.min((count / maxMessages) * 100, 100)}%`;
+    if (messageCounter) messageCounter.textContent = `${count}/${maxMessages} mensajes`;
+};
+
+form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    setFormState(false);
+
+    // Render user message immediately
+    const userBubble = createBubble('user', message, formatTime(new Date()));
+    chatContainer.appendChild(userBubble);
+    scrollToBottom();
+
+    // Typing indicator
+    const typing = createTyping();
+    chatContainer.appendChild(typing);
+    scrollToBottom();
+
     try {
         const response = await fetch('/chat/send-message', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 session_id: '{{ session.id }}',
                 message: message
             })
         });
-        
+
         const data = await response.json();
-        
+
+        typing.remove();
+
         if (data.success) {
-            location.reload();
+            const assistantBubble = createBubble('assistant', data.response, formatTime(new Date()));
+            chatContainer.appendChild(assistantBubble);
+            updateCounters(data.message_count || {{ session.message_count }} + 1);
+
+            if (data.locked) {
+                setFormState(false);
+            } else {
+                setFormState(true);
+                messageInput.value = '';
+                messageInput.focus();
+            }
+            scrollToBottom();
         } else {
+            setFormState(true);
+            messageInput.focus();
             alert('Error: ' + (data.error || 'Unknown error'));
-            messageInput.disabled = false;
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `
-                <span>Enviar</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                </svg>
-            `;
+            typing.remove();
         }
     } catch (error) {
+        typing.remove();
+        setFormState(true);
+        messageInput.focus();
         alert('Error de conexión. Por favor intenta de nuevo.');
-        messageInput.disabled = false;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `
-            <span>Enviar</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-            </svg>
-        `;
     }
-    
-    messageInput.value = '';
 });
+
+// Enviar con Enter (Shift+Enter para nueva línea)
+messageInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+    }
+});
+
+// Scroll al final en carga
+window.addEventListener('load', scrollToBottom);
 </script>
 {% endblock %}

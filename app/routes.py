@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 import logging
+import re
 
 from app.models import db, User, Project, BusinessPlan, ChatSession, ChatMessage, AuditLog
 from app.services.ai_service import IncubatorAI
@@ -244,8 +245,8 @@ def dashboard():
         Project.created_at.desc()
     ).all()
     
-    # Verificar si puede crear proyecto (rate limiting)
-    can_create = current_user.can_create_project()
+    # Sin límite diario de creación
+    can_create = True
     
     return render_template(
         "dashboard/index.html",
@@ -260,11 +261,6 @@ def dashboard():
 @login_required
 def create_project():
     """Crear nuevo proyecto (con rate limiting)"""
-    # Verificar rate limiting
-    if not current_user.can_create_project():
-        flash("Límite alcanzado: máximo 2 proyectos por 24 horas", "error")
-        return redirect(url_for("dashboard.dashboard"))
-    
     if request.method == "POST":
         title = request.form.get("title", "").strip()
         raw_idea = request.form.get("raw_idea", "").strip()
@@ -299,10 +295,6 @@ def create_project():
                 ip_address=request.remote_addr
             )
             db.session.add(audit)
-            db.session.commit()
-            
-            # Actualizar timestamp de última creación
-            current_user.last_project_creation = datetime.utcnow()
             db.session.commit()
             
             flash(f"Proyecto '{title}' creado exitosamente", "success")
@@ -359,10 +351,18 @@ def clarification_chat(project_id):
     if not session:
         # Generar preguntas de clarificación
         ai = IncubatorAI(current_app.config["GEMINI_API_KEY"])
-        questions = ai.generate_clarification_questions(
+        raw_questions = ai.generate_clarification_questions(
             project.raw_idea,
             num_questions=current_app.config["AI_AMBIGUITY_QUESTIONS"]
         )
+        seen = set()
+        questions = []
+        for q in raw_questions:
+            nq = re.sub(r"\W+", " ", (q or "").strip().lower()).strip()
+            if not nq or nq in seen:
+                continue
+            seen.add(nq)
+            questions.append(q)
         
         session = ChatSession(
             project_id=project_id,
@@ -447,9 +447,11 @@ def send_message():
     if not message_text:
         return jsonify({"error": "Mensaje vacío"}), 400
     
-    # Verificar límite de mensajes
-    if not session.can_add_message(current_app.config["MAX_CHAT_MESSAGES"]):
+    # Verificar límite de mensajes (solo cuenta mensajes de usuario)
+    user_msg_count = ChatMessage.query.filter_by(session_id=session_id, role="user").count()
+    if user_msg_count >= current_app.config["MAX_CHAT_MESSAGES"]:
         session.lock_session()
+        session.message_count = user_msg_count
         db.session.commit()
         return jsonify({
             "error": "Se alcanzó el límite de mensajes",
@@ -463,7 +465,7 @@ def send_message():
         content=message_text
     )
     db.session.add(user_message)
-    session.message_count += 1
+    session.message_count = user_msg_count + 1  # Solo mensajes de usuario
     db.session.commit()
     
     # Generar respuesta de IA
@@ -475,13 +477,86 @@ def send_message():
             f"{msg.role.upper()}: {msg.content}"
             for msg in ChatMessage.query.filter_by(session_id=session_id).all()
         ])
+
+        # Identificar preguntas ya hechas (para evitar repeticiones)
+        assistant_msgs = ChatMessage.query.filter_by(session_id=session_id, role="assistant").order_by(ChatMessage.created_at.asc()).all()
+        asked_questions = []
+        for msg in assistant_msgs:
+            content = (msg.content or "").strip()
+            if not content:
+                continue
+            if "Pregunta" in content or content.endswith("?"):
+                cleaned = re.sub(r"^\*\*Pregunta\s*\d+:\*\*\s*", "", content).strip()
+                if cleaned not in asked_questions:
+                    asked_questions.append(cleaned)
+
+        MIN_QUESTIONS = 3
+        MAX_QUESTIONS = 5
+        plan_already_exists = project.business_plan is not None
         
         # Generar respuesta según tipo de sesión
         if session.session_type == "clarification":
-            ai_response = ai.generate_clarification_reply(
-                project.raw_idea,
-                conversation_context
+            context_signal = len(conversation_context) >= 80  # evitar plan con contexto vacío
+            ready_for_plan = (
+                session.message_count >= MIN_QUESTIONS
+                and len(asked_questions) >= MIN_QUESTIONS
+                and context_signal
             )
+
+            if ready_for_plan and not plan_already_exists:
+                plan = ai.generate_business_plan(
+                    project.raw_idea,
+                    clarifications=conversation_context
+                )
+                # Guardar/actualizar plan
+                bp = project.business_plan or BusinessPlan(project_id=project.id)
+                bp.problem_statement = plan.get("problem_statement", "")
+                bp.value_proposition = plan.get("value_proposition", "")
+                bp.target_market = plan.get("target_market", "")
+                bp.revenue_model = plan.get("revenue_model", "")
+                bp.cost_analysis = plan.get("cost_analysis", "")
+                bp.technical_feasibility = plan.get("technical_feasibility", "")
+                bp.risks_analysis = plan.get("risks_analysis", "")
+                bp.scalability_potential = plan.get("scalability_potential", "")
+                bp.validation_strategy = plan.get("validation_strategy", "")
+                bp.overall_assessment = plan.get("overall_assessment", "")
+                bp.viability_score = plan.get("viability_score", 0)
+                bp.recommendation = plan.get("recommendation", "not_viable")
+                db.session.add(bp)
+                db.session.commit()
+                plan_already_exists = True
+
+            if plan_already_exists:
+                bp = project.business_plan
+                score = bp.viability_score or 0
+                semaforo = "🟢" if score >= 80 else "🟡" if score >= 60 else "🔴"
+                ai_response = (
+                    f"Análisis 9 pilares → Problema: {bp.problem_statement}. "
+                    f"Propuesta: {bp.value_proposition}. Mercado: {bp.target_market}. "
+                    f"Ingresos: {bp.revenue_model}. Costos: {bp.cost_analysis}. "
+                    f"Técnica: {bp.technical_feasibility}. Riesgos: {bp.risks_analysis}. "
+                    f"Escalabilidad: {bp.scalability_potential}. Validación: {bp.validation_strategy}. "
+                    f"Viabilidad: {score}/100 {semaforo}. Recomendación: {bp.recommendation}."
+                )
+            else:
+                ai_response = ai.generate_clarification_reply(
+                    project.raw_idea,
+                    conversation_context,
+                    user_turn=session.message_count,
+                    asked_questions=asked_questions,
+                    min_questions=MIN_QUESTIONS,
+                    max_questions=MAX_QUESTIONS
+                )
+                is_question = ai_response.strip().endswith("?") and len(ai_response.strip()) <= 200
+                if is_question:
+                    norm_set = {re.sub(r"\W+", " ", q.lower()).strip() for q in asked_questions}
+                    candidate_norm = re.sub(r"\W+", " ", ai_response.strip().lower()).strip()
+                    if candidate_norm in norm_set:
+                        for bank_q in ai.QUESTIONS_BANK:
+                            bnorm = re.sub(r"\W+", " ", bank_q.strip().lower()).strip()
+                            if bnorm and bnorm not in norm_set:
+                                ai_response = bank_q
+                                break
         else:
             # Análisis completo
             plan = ai.generate_business_plan(
@@ -517,11 +592,24 @@ def send_message():
             content=ai_response
         )
         db.session.add(ai_message)
-        session.message_count += 1
         
-        # Verificar si se alcanzó el límite
+        # No incrementamos el contador para respuestas del asistente
         if session.message_count >= current_app.config["MAX_CHAT_MESSAGES"]:
             session.lock_session()
+            
+            # Agregar mensaje de cierre automático al alcanzar límite
+            closing_message = ChatMessage(
+                session_id=session_id,
+                role="assistant",
+                content="""Has superado el límite de mensajes de esta sesión.
+
+Para continuar con el desarrollo de tu proyecto, te invitamos a agendar una reunión con nuestro equipo:
+
+🔗 Reserva tu espacio aquí: https://calendar.app.google/cuDDtC9Y1tZVDPuD7
+
+Podrás elegir el horario que mejor se adapte a tu disponibilidad. ¡Te esperamos!"""
+            )
+            db.session.add(closing_message)
         
         db.session.commit()
         

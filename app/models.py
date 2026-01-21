@@ -52,11 +52,8 @@ class User(UserMixin, db.Model):
         return bcrypt.checkpw(password.encode("utf-8"), self.password_hash.encode("utf-8"))
     
     def can_create_project(self) -> bool:
-        """Validar rate limiting: máximo 2 proyectos por 24 horas"""
-        if self.last_project_creation is None:
-            return True
-        time_elapsed = datetime.utcnow() - self.last_project_creation
-        return time_elapsed >= timedelta(hours=24)
+        """Rate limiting deshabilitado (permite crear proyectos sin límite diario)"""
+        return True
     
     def generate_reset_token(self) -> str:
         """Generar token de recuperación de contraseña (válido por 1 hora)"""
@@ -176,6 +173,7 @@ class ChatSession(db.Model):
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     project_id = db.Column(db.String(36), db.ForeignKey("projects.id"), nullable=False, index=True)
+    # message_count almacena solo mensajes de usuario (rol "user")
     message_count = db.Column(db.Integer, default=0)
     is_locked = db.Column(db.Boolean, default=False)  # Bloqueado al alcanzar límite
     session_type = db.Column(db.Enum("clarification", "analysis", "pivot", name="session_type"), 
@@ -190,16 +188,20 @@ class ChatSession(db.Model):
         db.Index("idx_project_created", "project_id", "created_at"),
     )
     
+    def user_messages_count(self) -> int:
+        """Cuenta mensajes del usuario; no incluye respuestas del asistente."""
+        return ChatMessage.query.filter_by(session_id=self.id, role="user").count()
+    
     def can_add_message(self, max_messages: int = 10) -> bool:
-        """Validar si se puede agregar un mensaje"""
-        return not self.is_locked and self.message_count < max_messages
+        """Validar si se puede agregar un mensaje del usuario"""
+        return not self.is_locked and self.user_messages_count() < max_messages
     
     def lock_session(self) -> None:
         """Bloquear sesión al alcanzar límite"""
         self.is_locked = True
     
     def __repr__(self) -> str:
-        return f"<ChatSession {self.id} ({self.message_count} messages)>"
+        return f"<ChatSession {self.id} ({self.message_count} user messages)>"
 
 
 class ChatMessage(db.Model):

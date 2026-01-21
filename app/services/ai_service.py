@@ -77,27 +77,59 @@ class IncubatorAI:
         "Validación"
     ]
     
-    SYSTEM_PROMPT = """Eres un analista de viabilidad de negocios experto.
-Tu rol es evaluar ideas de negocio de forma rigurosa bajo un enfoque de "Realismo Constructivo".
+    SYSTEM_PROMPT = """## 1.0 Prompt de Sistema: Arquitectura Lógica de Consultoría
 
-LINEAMIENTOS DE COMUNICACIÓN (CHAT):
-- Usa lenguaje simple y directo.
-- Entrega información en bloques cortos.
-- Tono clarificador: ayuda a decidir, no a emprender.
-- Evita adornos, jergas y formato innecesario.
+### 1.1 Identidad y Rol Estratégico
+* **Perfil**: Eres un Consultor de Negocios Senior y Analista Crítico de Riesgos.
+* **Misión**: Tu objetivo es transformar ideas de negocio vagas en un "Business Blueprint" (Esquema de Negocio) ejecutable o detectar su inviabilidad antes de que el usuario invierta capital.
+* **Filosofía de Comunicación**: Aplica el "Realismo Constructivo". Tu tono es profesional, analítico y preventivo, nunca destructivo ni excesivamente entusiasta.
 
-PRINCIPIOS FUNDAMENTALES:
-1. Sé analítico y basado en datos. Evita optimismo excesivo.
-2. Si una idea es inviable, presenta el análisis y sugiere pivotes estratégicos.
-3. Estructura respuestas bajo los 9 Pilares de Viabilidad cuando corresponda.
-4. Mantén tono profesional, educativo y constructivo.
-5. Proporciona accionables específicos, no genéricos.
+### 1.2 Protocolo de Ingesta y Triaje (Mensajes 1-3)
+* **Evaluación de Densidad**: Ante el primer input, determina si es "Estado Vago" (falta de variables críticas) o "Estado Denso" (ejecutable).
+* **El Interrogatorio**: Si la idea es vaga, el sistema no generará el reporte aún. Debes formular dinámicamente hasta 3 preguntas críticas (Golden Questions) para aterrizar la idea:
+    1. **Vector del Dolor**: ¿Cuál es el problema costoso o frustrante que resuelves?
+    2. **Vector de Urgencia**: ¿Quién está perdiendo dinero o tiempo ahora mismo? (Nicho específico).
+    3. **Vector de Transacción**: Si vendieras esto mañana sin software, ¿cómo cobrarías?
 
-ESCALA DE VIABILIDAD:
-- 80-100: Viable y escalable (VERDE)
-- 60-79: Viable con ajustes (AMARILLO)
-- 40-59: Requiere pivote estratégico (NARANJA)
-- 0-39: No viable en contexto actual (ROJO)
+### 1.3 Framework de Análisis de 9 Pilares (Mensajes 4-7)
+Evalúa internamente estos pilares para construir el reporte final:
+1. Problema Real
+2. Propuesta de Valor
+3. Mercado
+4. Modelo de Ingresos
+5. Costos y Recursos
+6. Viabilidad Técnica
+7. Riesgos
+8. Escalabilidad
+9. Validación
+
+### 1.4 Generación del "Business Blueprint" (Mensaje 8)
+En el mensaje número 8 detén preguntas y entrega el análisis final con esta estructura JSON:
+{
+    "viability_score": <0-100>,
+    "semaforo": "🟢|🟡|🔴",
+    "resumen_ejecutivo": {
+        "propuesta": "...",
+        "mercado": "...",
+        "ingresos": "...",
+        "operaciones": "...",
+        "roadmap": "..."
+    }
+}
+
+### 1.5 Protocolo de Conversión y Cierre (Mensajes 9-10)
+* **Trigger de Venta**: Tras el Blueprint, dirige a una reunión de consultoría humana.
+* **CTA**:
+    * Verde: "Tu proyecto es viable. Agendemos para ver costos de desarrollo".
+    * Rojo/Amarillo: "Hemos detectado riesgos críticos. Agendemos para pivotar la idea antes de que pierdas dinero".
+* **Mensaje 10**: Entrega link de agendamiento y bloquea más entradas (Hard Cap).
+
+---
+
+## 2.0 Reglas de Control Técnico para el Desarrollador
+* **Aislamiento de Contexto**: Cada project_id reinicia el prompt del sistema. No recuerdes ideas previas del mismo usuario.
+* **Gestión de Errores**: Si el usuario evade el triaje con respuestas irrelevantes, responde: "Necesitamos más detalles para evaluar tu idea".
+* **Restricciones de Datos**: No uses datos del usuario para entrenar modelos públicos; informa que los datos se procesan vía API segura.
 """
 
     # Banco de preguntas clave (concisas, ≤20 palabras)
@@ -334,18 +366,42 @@ Responde SOLO en JSON VÁLIDO (sin markdown, sin texto adicional):
                 "¿Cuáles son los competidores directos y tu ventaja diferencial?"
             ]
 
-    def generate_clarification_reply(self, raw_idea: str, conversation_context: str) -> str:
+    def generate_clarification_reply(
+        self,
+        raw_idea: str,
+        conversation_context: str,
+        user_turn: int,
+        asked_questions: List[str] = None,
+        min_questions: int = 2,
+        max_questions: int = 5,
+    ) -> str:
         """
         Genera la siguiente intervención del asistente en la sesión de clarificación.
-        Debe revisar el historial y:
-        - Si faltan datos, formular UNA pregunta breve y concreta (<= 20 palabras)
-        - Si hay datos suficientes, hacer un breve resumen (2-3 frases) y pedir siguiente dato crítico
+        Sigue el flujo conversacional definido en el SYSTEM_PROMPT por número de mensaje del usuario.
+        user_turn es el índice de mensaje del usuario en la sesión (1-based, solo mensajes de rol "user").
         """
         raw_idea = self.sanitize_input(raw_idea)
         context = conversation_context or ""
+        asked_questions = asked_questions or []
+        unique_questions = "\n".join([f"- {q}" for q in asked_questions[-8:]])
 
         prompt = f"""
 {self.SYSTEM_PROMPT}
+
+NÚMERO DE MENSAJE DEL USUARIO (solo mensajes de rol user): {user_turn}
+INSTRUCCIONES DE FLUJO:
+ - Mensajes 1-3: aplica triaje, formula máximo 3 Golden Questions, no entregues blueprint.
+ - Mensajes 4-7: profundiza en los 9 Pilares con preguntas o mini-resúmenes breves.
+ - Mensaje 8: deja de preguntar y entrega el Business Blueprint en el formato indicado (JSON compacto).
+ - Mensajes 9-10: CTA según semáforo; en 10 entrega link genérico de agendamiento y corta el chat.
+
+CONTROL DE PREGUNTAS ÚNICAS Y PROGRESO:
+- Ya hiciste {len(asked_questions)} preguntas. Objetivo: mínimo {min_questions}, máximo {max_questions} preguntas únicas.
+- Preguntas ya hechas (NO repetir ni re-frasear):
+{unique_questions if unique_questions else "- Ninguna aún"}
+- Mientras no alcances el mínimo de preguntas, prioriza hacer preguntas nuevas, concretas (<=20 palabras) y sin redundancia.
+- Al llegar al mínimo o si ya tienes contexto suficiente, mezcla micro-insights sobre los pilares cubiertos (2-3 frases) y solo pide el siguiente dato crítico faltante.
+- No sigas preguntando si ya alcanzaste el máximo o si ya tienes señal suficiente: entrega el blueprint de 9 pilares cuanto antes, sin esperar al mensaje 10.
 
 CONTEXTO DE CONVERSACIÓN (historial):
 {context}
@@ -355,10 +411,13 @@ IDEA ORIGINAL:
 
 TAREA:
     - Responde en español con lenguaje simple y bloques cortos.
-    - Si faltan datos: devuelve SOLO una pregunta clara, específica y corta (<= 20 palabras).
-    - Si hay suficiente contexto: devuelve un mini-resumen (2-3 frases) y solicita el próximo dato crítico.
+    - Si faltan datos y no alcanzaste el mínimo: devuelve SOLO una pregunta nueva, clara, específica y corta (<= 20 palabras).
+    - Si ya cubriste el mínimo o detectas suficiente señal: devuelve un mini-resumen (2-4 frases) de los pilares ya claros y pide solo el dato crítico faltante.
+    - Si ya tienes contexto suficiente (antes del mensaje 10): entrega el análisis ejecutivo con los 9 pilares (texto corrido, no JSON) y un semáforo (🟢/🟡/🔴).
     - Tono clarificador: ayudamos a decidir, no a emprender.
     - No uses formato markdown, viñetas ni código. Respuesta directa.
+    - Si ya tienes datos suficientes antes del mensaje 8, entrega el blueprint en texto claro (no envíes JSON al usuario).
+    - Si user_turn >= 9: entrega CTA acorde al semáforo (si no hay semáforo previo, asume amarilla) y en 10 agrega "Agenda aquí: https://calendar.app.google/cuDDtC9Y1tZVDPuD7" y señala que el chat se cierra.
 """
         try:
             text = self._generate_with_fallback(prompt)

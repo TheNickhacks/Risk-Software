@@ -37,30 +37,30 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto flex flex-col h-full">
+<div class="w-full flex flex-col h-full px-2 md:px-4 lg:px-6">
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center space-x-4">
-            <a href="/project/{{ project.id }}" class="text-slate-400 hover:text-white transition-colors duration-200">
+            <a href="/project/{{ project.id }}" class="text-[#E4F3F8] hover:text-[#FFC300] transition-colors duration-200">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
             </a>
             <div>
-                <h1 class="text-xl md:text-2xl font-bold text-white">Análisis de Viabilidad</h1>
-                <p class="text-slate-400 text-sm mt-1">{{ project.title }}</p>
+                <h1 class="text-xl md:text-2xl font-bold text-[#E4F3F8]">Análisis de Viabilidad</h1>
+                <p class="text-sm mt-1 text-[#a8c5d8]">{{ project.title }}</p>
             </div>
         </div>
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-purple-900/30 border border-purple-600/50">
-            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#003d5a] border border-[#00A2DF]">
+            <svg class="w-4 h-4 text-[#E4F3F8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
             </svg>
-            <span class="text-xs text-purple-300">9 Pilares</span>
+            <span class="text-xs text-[#E4F3F8]">9 Pilares</span>
         </div>
     </div>
     
     <!-- Chat Container -->
-    <div class="chat-container overflow-y-auto mb-6 space-y-4 pr-2">
+    <div id="chatContainer" class="chat-container overflow-y-auto mb-6 space-y-4 pr-2">
         {% if not messages %}
         <div class="card-static p-8 text-center">
             <div class="w-16 h-16 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-2xl flex items-center justify-center mx-auto mb-5 pulse-glow">
@@ -77,21 +77,16 @@
             <div class="message-bubble {% if message.role == 'user' %}order-2{% else %}order-1{% endif %}">
                 {% if message.role != 'user' %}
                 <div class="flex items-center space-x-2 mb-2">
-                    <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-6 h-6 bg-palette-amber rounded-lg flex items-center justify-center shadow-glow-sm">
+                        <svg class="w-3 h-3 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
-                    <span class="text-xs font-medium text-slate-400">Análisis AI</span>
+                    <span class="text-xs font-medium text-[#E4F3F8]">Análisis AI</span>
                 </div>
                 {% endif %}
-                <div class="p-4 rounded-2xl
-                    {% if message.role == 'user' %}
-                        bg-gradient-to-br from-blue-600 to-blue-700 rounded-br-md
-                    {% else %}
-                        card-static rounded-bl-md
-                    {% endif %}">
-                    <p class="text-sm {% if message.role == 'user' %}text-white{% else %}text-slate-300{% endif %} whitespace-pre-wrap leading-relaxed">
+                <div class="p-4 rounded-2xl {% if message.role == 'user' %}bubble-user rounded-br-md{% else %}bubble-ai rounded-bl-md{% endif %}">
+                    <p class="text-sm whitespace-pre-wrap leading-relaxed {% if message.role == 'user' %}text-white{% else %}text-[#E4F3F8]{% endif %}">
                         {{ message.content }}
                     </p>
                 </div>
@@ -132,16 +127,17 @@
             
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                    <div class="h-1.5 w-24 bg-slate-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300" 
+                    <div class="h-1.5 w-24 bg-[#003d5a] rounded-full overflow-hidden">
+                        <div id="progressFill" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300" 
                              style="width: {{ (session.message_count / config.MAX_CHAT_MESSAGES * 100)|int }}%"></div>
                     </div>
-                    <span class="text-xs text-slate-500">
+                    <span id="messageCounter" class="text-xs text-[#a8c5d8]">
                         {{ session.message_count }}/{{ config.MAX_CHAT_MESSAGES }} mensajes
                     </span>
                 </div>
                 <button
                     type="submit"
+                    id="submitBtn"
                     class="btn-primary text-white font-medium py-2.5 px-6 rounded-xl inline-flex items-center space-x-2 text-sm"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,65 +169,166 @@
 </div>
 
 <script>
-document.getElementById('messageForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const messageInput = document.getElementById('messageInput');
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const message = messageInput.value.trim();
-    
-    if (!message) return;
-    
-    // Disable form while sending
-    messageInput.disabled = true;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `
-        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span>Analizando...</span>
+const form = document.getElementById('messageForm');
+const messageInput = document.getElementById('messageInput');
+const submitBtn = document.getElementById('submitBtn');
+const chatContainer = document.getElementById('chatContainer');
+const progressFill = document.getElementById('progressFill');
+const messageCounter = document.getElementById('messageCounter');
+const maxMessages = {{ config.MAX_CHAT_MESSAGES }};
+
+const formatTime = (date) => {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const createBubble = (role, content, timeLabel) => {
+    const isUser = role === 'user';
+    const wrapper = document.createElement('div');
+    wrapper.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble ${isUser ? 'order-2' : 'order-1'}`;
+
+    if (!isUser) {
+        const header = document.createElement('div');
+        header.className = 'flex items-center space-x-2 mb-2';
+        header.innerHTML = `
+            <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <span class="text-xs font-medium text-[#E4F3F8]">Análisis AI</span>
+        `;
+        bubble.appendChild(header);
+    }
+
+    const body = document.createElement('div');
+    body.className = `p-4 rounded-2xl ${isUser ? 'bg-gradient-to-br from-blue-600 to-blue-700 rounded-br-md' : 'card-static rounded-bl-md'}`;
+    const text = document.createElement('p');
+    text.className = `text-sm ${isUser ? 'text-white' : 'text-[#E4F3F8]'} whitespace-pre-wrap leading-relaxed`;
+    text.textContent = content;
+    body.appendChild(text);
+    bubble.appendChild(body);
+
+    const time = document.createElement('p');
+    time.className = `text-xs text-slate-500 mt-2 ${isUser ? 'text-right' : ''}`;
+    time.textContent = timeLabel;
+    bubble.appendChild(time);
+
+    wrapper.appendChild(bubble);
+    return wrapper;
+};
+
+const createTyping = () => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex justify-start typing-holder';
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble order-1';
+    bubble.innerHTML = `
+        <div class="flex items-center space-x-2 mb-2">
+            <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <span class="text-xs font-medium text-slate-400">Análisis AI</span>
+        </div>
+        <div class="p-4 rounded-2xl card-static rounded-bl-md typing-indicator">
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
     `;
-    
+    wrapper.appendChild(bubble);
+    return wrapper;
+};
+
+const scrollToBottom = () => {
+    if (chatContainer) {
+        chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+    }
+};
+
+const setFormState = (enabled) => {
+    messageInput.disabled = !enabled;
+    submitBtn.disabled = !enabled;
+    submitBtn.innerHTML = enabled
+        ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg><span>Analizar</span>`
+        : `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Analizando...</span>`;
+};
+
+const updateCounters = (count) => {
+    if (progressFill) progressFill.style.width = `${Math.min((count / maxMessages) * 100, 100)}%`;
+    if (messageCounter) messageCounter.textContent = `${count}/${maxMessages} mensajes`;
+};
+
+form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    setFormState(false);
+
+    // Render user message immediately
+    const userBubble = createBubble('user', message, formatTime(new Date()));
+    chatContainer.appendChild(userBubble);
+    scrollToBottom();
+
+    // Typing indicator
+    const typing = createTyping();
+    chatContainer.appendChild(typing);
+    scrollToBottom();
+
     try {
         const response = await fetch('/chat/send-message', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 session_id: '{{ session.id }}',
                 message: message
             })
         });
-        
+
         const data = await response.json();
-        
+
+        typing.remove();
+
         if (data.success) {
-            location.reload();
+            const assistantBubble = createBubble('assistant', data.response, formatTime(new Date()));
+            chatContainer.appendChild(assistantBubble);
+            updateCounters(data.message_count || {{ session.message_count }} + 1);
+
+            if (data.locked) {
+                setFormState(false);
+            } else {
+                setFormState(true);
+                messageInput.value = '';
+                messageInput.focus();
+            }
+            scrollToBottom();
         } else {
+            setFormState(true);
+            messageInput.focus();
             alert('Error: ' + (data.error || 'Unknown error'));
-            messageInput.disabled = false;
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
-                <span>Analizar</span>
-            `;
+            typing.remove();
         }
     } catch (error) {
+        typing.remove();
+        setFormState(true);
+        messageInput.focus();
         alert('Error de conexión. Por favor intenta de nuevo.');
-        messageInput.disabled = false;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-            <span>Analizar</span>
-        `;
     }
-    
-    messageInput.value = '';
 });
+
+// Enviar con Enter (Shift+Enter para nueva línea)
+messageInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+    }
+});
+
+// Scroll al final en carga
+window.addEventListener('load', scrollToBottom);
 </script>
 {% endblock %}
